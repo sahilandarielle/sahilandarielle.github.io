@@ -1734,8 +1734,8 @@ input, select, textarea {
   
   .image-scroll-container img {
 	flex: 0 0 auto;
-	width: 75%;
-	height: 75%;
+	width: 90%;
+	height: 90%;
 	object-fit: cover;
 	border-radius: 4px;
   }
