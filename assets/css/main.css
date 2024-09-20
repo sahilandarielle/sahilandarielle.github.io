@@ -1727,24 +1727,10 @@ input, select, textarea {
 	overflow-x: auto;
 	gap: 1rem;
 	padding: 1rem 0;
-	-webkit-overflow-scrolling: touch;
 	scrollbar-width: thin;
 	scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+	width: 100%;
 }
-  
-  .image-scroll-container::-webkit-scrollbar {
-	height: 8px;
-  }
-  
-  .image-scroll-container::-webkit-scrollbar-track {
-	background: transparent;
-  }
-  
-  .image-scroll-container::-webkit-scrollbar-thumb {
-	background-color: rgba(255, 255, 255, 0.5);
-	border-radius: 20px;
-	border: transparent;
-  }
   
   .image-scroll-container img {
 	flex: 0 0 auto;
