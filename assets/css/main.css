@@ -1116,7 +1116,7 @@ input, select, textarea {
 
 /* BG */
 
-	#bg {
+	#bg_engagement {
 		transform: scale(1.0);
 		backface-visibility: hidden;
 		position: fixed;
@@ -1127,7 +1127,7 @@ input, select, textarea {
 		z-index: 1;
 	}
 
-		#bg:before, #bg:after {
+		#bg_engagement:before, #bg_engagement:after {
 			content: '';
 			display: block;
 			position: absolute;
@@ -1137,7 +1137,7 @@ input, select, textarea {
 			height: 100%;
 		}
 
-		#bg:before {
+		#bg_engagement:before {
 			transition: background-color 2.5s ease-in-out;
 			transition-delay: 0.75s;
 			background-size: auto, 256px 256px;
@@ -1146,7 +1146,7 @@ input, select, textarea {
 			z-index: 2;
 		}
 
-		#bg:after {
+		#bg_engagement:after {
 			transform: scale(1);
 			transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out;
 			background-image: url("/images/proposal.webp");
@@ -1158,18 +1158,18 @@ input, select, textarea {
 
 		/* Background for mobile screens */
 		@media screen and (max-width: 1000px) {
-			#bg:after {
+			#bg_engagement:after {
 				background-image: url("/images/proposal.webp");
 				background-position: 28%
 			}
 		}
 
-		body.is-article-visible #bg:after {
+		body.is-article-visible #bg_engagement:after {
 			transform: scale(1.125);
 			filter: blur(0.2rem);
 		}
 
-		body.is-preload #bg:before {
+		body.is-preload #bg_engagement:before {
 			background-color: #000000;
 		}
 
@@ -1226,6 +1226,63 @@ input, select, textarea {
 		}
 
 		body.is-preload #bg_home:before {
+			background-color: #000000;
+		}
+
+	#bg_std {
+		transform: scale(1.0);
+		backface-visibility: hidden;
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100vh;
+		z-index: 1;
+	}
+
+		#bg_std:before, #bg_std:after {
+			content: '';
+			display: block;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+		}
+
+		#bg_std:before {
+			transition: background-color 2.5s ease-in-out;
+			transition-delay: 0.75s;
+			background-size: auto, 256px 256px;
+			background-position: center, center;
+			background-repeat: no-repeat, repeat;
+			z-index: 2;
+		}
+
+		#bg_std:after {
+			transform: scale(1);
+			transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out;
+			background-image: url("/images/tam_looking.jpeg");
+			background-position: center;
+			background-size: cover;
+			background-repeat: no-repeat;
+			z-index: 1;
+		}
+
+		/* Background for mobile screens */
+		@media screen and (max-width: 1000px) {
+			#bg_std:after {
+				background-image: url("/images/tam_looking.jpeg");
+				background-position: 28%
+			}
+		}
+
+		body.is-article-visible #bg_std:after {
+			transform: scale(1.125);
+			filter: blur(0.2rem);
+		}
+
+		body.is-preload #bg_std:before {
 			background-color: #000000;
 		}
 
