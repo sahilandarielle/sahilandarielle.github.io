@@ -26,7 +26,7 @@
 		<meta property="og:image" content="https://sahilandarielle.com/images/tam_looking.jpeg" />
 		<meta property="og:url" content="https://sahilandarielle.com/save-the-date" />
 		<meta property="og:type" content="website" />
-		<link rel="icon" href="/images/sun-regular.svg">
+		<link rel="icon" href="/images/icons/sun-regular.svg">
 
 		<link rel="stylesheet" href="/assets/css/main.css" />
 		<noscript><link rel="stylesheet" href="/assets/css/noscript.css" /></noscript>
@@ -52,7 +52,8 @@
 				<nav>
 					<ul>
 						<li><a href="https://www.youtube.com/watch?v=IKdKVhOT2lc" target="_blank" rel="noopener noreferrer">Watch Video</a></li>
-						<!-- <li><a href="#details">Details</a></li> -->
+						<li><a href="#details">Details</a></li>
+						<li><a href="#gallery">Gallery</a></li>
 					</ul>
 				</nav>
 			</header>
@@ -61,9 +62,66 @@
 			<div id="main">
 
 				<!-- Details -->
-				<article id="details">
-					<h2 class="major">Event Details</h2>
-					<p>Stay tuned!</p>
+				<article id="details"> 
+					<h2 class="major">WEDDING WEEKEND</h2>
+					<p>We're excited to announce the event details for our wedding weekend, blending traditional aspects of both our backgrounds. Mark your calendars and get ready to party!</p>
+					
+					<h3 class="minor">Thursday | July 23th, 2026</h3>
+					<h4>Location To Be Announced</h4>
+					<ul>
+						<li><strong>Mehendi</strong><br>
+						Select Guest Attendance</li>
+					</ul>
+
+					<h3 class="minor">Friday | July 24th, 2026</h3>
+					<h4>Danada House<br>
+						<a href="https://maps.app.goo.gl/F13Cd3MgMFsMdA2z8" target="_blank" rel="noopener noreferrer">3S501 Naperville Rd, Wheaton, IL 60189</a></h4>	
+					<ul>
+						<li><strong>Morning | Grah Shanti & Haldi</strong><br>
+						Select Guest Attendance</li>
+						<li><strong>Evening | Garba</strong><br>
+						All Guests Welcome</li>
+					</ul>
+					
+					<h3 class="minor">Saturday | July 25th, 2026</h3>
+					<h4>Cantigny<br>
+					<a href="https://maps.app.goo.gl/fRjwhtQhYdGt9yMo9" target="_blank" rel="noopener noreferrer">1 S, 151 Winfield Rd, Wheaton, IL 60189</a></h4>
+					
+					<ul>
+						<li><strong>Morning | Baraat & Indian Ceremony</strong><br>
+						All Guests Welcome</li>
+						<li><strong>Evening | American Ceremony & Reception</strong><br>
+						All Guests Welcome</li>
+					</ul>
+					
+					<p style="margin-top: 2em;"><em>Detailed schedules, dress codes, and additional event information will be included with your formal wedding invitation. We can't wait to celebrate with you!</em></p>
+				</article>
+
+				<!-- Gallery -->
+				<article id="gallery">
+					<h2 class="major">Gallery</h2>
+					<p>A collection of our favorite moments captured while filming the save the date video. Brought to you by our talented friends and the gorgeous California scenery.</p>
+					
+					<div class="gallery">
+						<img src="/images/std/gallery/0.jpg" alt="Gallery image 1" />
+						<img src="/images/std/gallery/1.jpg" alt="Gallery image 2" />
+						<img src="/images/std/gallery/2.jpg" alt="Gallery image 3" />
+						<img src="/images/std/gallery/3.jpg" alt="Gallery image 4" />
+						<img src="/images/std/gallery/4.jpg" alt="Gallery image 5" />
+						<img src="/images/std/gallery/5.jpg" alt="Gallery image 6" />
+						<img src="/images/std/gallery/6.jpg" alt="Gallery image 7" />
+						<img src="/images/std/gallery/7.jpg" alt="Gallery image 8" />
+						<img src="/images/std/gallery/8.jpg" alt="Gallery image 9" />
+						<img src="/images/std/gallery/9.jpg" alt="Gallery image 10" />
+						<img src="/images/std/gallery/10.jpg" alt="Gallery image 11" />
+						<img src="/images/std/gallery/11.jpg" alt="Gallery image 12" />
+						<img src="/images/std/gallery/12.jpg" alt="Gallery image 13" />
+						<img src="/images/std/gallery/13.jpg" alt="Gallery image 14" />
+						<img src="/images/std/gallery/14.jpg" alt="Gallery image 15" />
+						<img src="/images/std/gallery/15.jpg" alt="Gallery image 16" />
+						<img src="/images/std/gallery/16.jpg" alt="Gallery image 17" />
+						<img src="/images/std/gallery/17.jpg" alt="Gallery image 18" />
+					</div>
 				</article>
 
 			</div>
@@ -78,12 +136,67 @@
 		<!-- Background -->
 		<div id="bg_std"></div>
 
+		<!-- Lightbox -->
+		<div id="lightbox" class="lightbox">
+			<span class="close-lightbox">&times;</span>
+			<img id="lightbox-img" src="" alt="Enlarged image">
+		</div>
+
 		<!-- Scripts -->
 		<script src="/assets/js/jquery.min.js"></script>
 		<script src="/assets/js/browser.min.js"></script>
 		<script src="/assets/js/breakpoints.min.js"></script>
 		<script src="/assets/js/util.js"></script>
 		<script src="/assets/js/main.js"></script>
+
+		<!-- Lightbox Script -->
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				const lightbox = document.getElementById('lightbox');
+				const lightboxImg = document.getElementById('lightbox-img');
+				const closeLightbox = document.querySelector('.close-lightbox');
+				const galleryImages = document.querySelectorAll('.gallery img');
+
+				// Add click listeners to all gallery images
+				galleryImages.forEach(function(img) {
+					img.style.cursor = 'pointer';
+					img.addEventListener('click', function() {
+						lightboxImg.src = this.src;
+						lightboxImg.alt = this.alt;
+						lightbox.classList.add('active');
+						document.body.style.overflow = 'hidden'; // Prevent background scrolling
+					});
+				});
+
+				// Close lightbox when clicking the close button
+				closeLightbox.addEventListener('click', closeLightboxFunction);
+
+				// Close lightbox when clicking the background (but prevent closing the gallery modal)
+				lightbox.addEventListener('click', function(e) {
+					if (e.target === lightbox) {
+						e.stopPropagation(); // Prevent event from bubbling up to gallery modal
+						closeLightboxFunction();
+					}
+				});
+
+				// Prevent lightbox content from closing when clicked
+				lightboxImg.addEventListener('click', function(e) {
+					e.stopPropagation();
+				});
+
+				// Close lightbox with ESC key
+				document.addEventListener('keydown', function(e) {
+					if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+						closeLightboxFunction();
+					}
+				});
+
+				function closeLightboxFunction() {
+					lightbox.classList.remove('active');
+					document.body.style.overflow = 'auto'; // Restore background scrolling
+				}
+			});
+		</script>
 
 	</body>
 </html> 
