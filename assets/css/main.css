@@ -1282,9 +1282,65 @@ input, select, textarea {
 			filter: blur(0.2rem);
 		}
 
-		body.is-preload #bg_std:before {
-			background-color: #000000;
+	body.is-preload #bg_std:before {
+		background-color: #000000;
+	}
+
+	#bg_rsvp {
+		transform: scale(1.0);
+		backface-visibility: hidden;
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100vh;
+		z-index: 1;
+	}
+
+		#bg_rsvp:before, #bg_rsvp:after {
+			content: '';
+			display: block;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
 		}
+
+		#bg_rsvp:before {
+			transition: background-color 2.5s ease-in-out;
+			transition-delay: 0.75s;
+			background-size: auto, 256px 256px;
+			background-color: #000000;
+			background-position: center, center;
+			background-repeat: repeat, no-repeat;
+		}
+
+	#bg_rsvp:after {
+		transform: scale(1);
+		transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out;
+		background-image: url("/images/engagement/tree_ring.webp");
+		background-position: center;
+		background-size: cover;
+		background-repeat: no-repeat;
+		opacity: 0.8;
+	}
+
+	@media screen and (max-width: 1280px) {
+		#bg_rsvp:after {
+			background-image: url("/images/engagement/tree_ring.webp");
+			background-position: 45%
+		}
+	}
+
+		body.is-article-visible #bg_rsvp:after {
+			transform: scale(1.125);
+			filter: blur(0.2rem);
+		}
+
+	body.is-preload #bg_rsvp:before {
+		background-color: #000000;
+	}
 
 /* Wrapper */
 
