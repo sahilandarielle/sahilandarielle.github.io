@@ -1286,7 +1286,7 @@ input, select, textarea {
 		background-color: #000000;
 	}
 
-	#bg_rsvp {
+	#bg_wedding {
 		transform: scale(1.0);
 		backface-visibility: hidden;
 		position: fixed;
@@ -1297,7 +1297,7 @@ input, select, textarea {
 		z-index: 1;
 	}
 
-		#bg_rsvp:before, #bg_rsvp:after {
+		#bg_wedding:before, #bg_wedding:after {
 			content: '';
 			display: block;
 			position: absolute;
@@ -1307,38 +1307,39 @@ input, select, textarea {
 			height: 100%;
 		}
 
-		#bg_rsvp:before {
+		#bg_wedding:before {
 			transition: background-color 2.5s ease-in-out;
 			transition-delay: 0.75s;
 			background-size: auto, 256px 256px;
-			background-color: #000000;
 			background-position: center, center;
-			background-repeat: repeat, no-repeat;
+			background-repeat: no-repeat, repeat;
+			z-index: 2;
 		}
 
-	#bg_rsvp:after {
-		transform: scale(1);
-		transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out;
-		background-image: url("/images/engagement/tree_ring.webp");
-		background-position: center;
-		background-size: cover;
-		background-repeat: no-repeat;
-		opacity: 0.8;
-	}
-
-	@media screen and (max-width: 1280px) {
-		#bg_rsvp:after {
-			background-image: url("/images/engagement/tree_ring.webp");
-			background-position: 45%
+		#bg_wedding:after {
+			transform: scale(1);
+			transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out;
+			background-image: url("/images/wedding/smiling.webp");
+			background-position: center 0%;
+			background-size: cover;
+			background-repeat: no-repeat;
+			z-index: 1;
 		}
-	}
 
-		body.is-article-visible #bg_rsvp:after {
+		/* Background for mobile screens */
+		@media screen and (max-width: 1000px) {
+			#bg_wedding:after {
+				background-image: url("/images/wedding/smiling.webp");
+				background-position: 45%;
+			}
+		}
+
+		body.is-article-visible #bg_wedding:after {
 			transform: scale(1.125);
 			filter: blur(0.2rem);
 		}
 
-	body.is-preload #bg_rsvp:before {
+	body.is-preload #bg_wedding:before {
 		background-color: #000000;
 	}
 
@@ -1520,10 +1521,10 @@ input, select, textarea {
 
 				#header nav ul li a {
 					display: block;
-					min-width: 9.5rem;
+					min-width: 7.5rem;
 					height: 2.75rem;
 					line-height: 2.75rem;
-					padding: 0 1.25rem 0 1.45rem;
+					padding: 0 0.9rem 0 0.9rem;
 					text-transform: uppercase;
 					letter-spacing: 0.2rem;
 					font-size: 0.8rem;

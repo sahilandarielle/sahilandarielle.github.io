@@ -1,0 +1,237 @@
+/* Password Overlay Styles */
+.password-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.95);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 10000;
+	backdrop-filter: blur(10px);
+}
+
+.password-overlay.hidden {
+	display: none;
+}
+
+.password-container {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 8px;
+	padding: 3em;
+	max-width: 400px;
+	width: 90%;
+	text-align: center;
+}
+
+.password-container h2 {
+	margin-bottom: 0.5em;
+	color: #ffffff;
+}
+
+.password-container p {
+	color: rgba(255, 255, 255, 0.8);
+	margin-bottom: 1.5em;
+}
+
+#password-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+}
+
+#password-input {
+	padding: 0.75em 1em;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	background: rgba(255, 255, 255, 0.05);
+	color: #ffffff;
+	border-radius: 4px;
+	font-size: 1em;
+	transition: all 0.3s ease;
+}
+
+#password-input:focus {
+	outline: none;
+	border-color: rgba(255, 255, 255, 0.6);
+	background: rgba(255, 255, 255, 0.1);
+}
+
+#password-input::placeholder {
+	color: rgba(255, 255, 255, 0.5);
+}
+
+.password-error {
+	color: #ff6b6b;
+	font-size: 0.9em;
+	margin-top: 0.5em;
+	min-height: 1.2em;
+}
+
+/* Carousel Modal Styles */
+.outfit-examples-btn {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	color: #ffffff;
+	padding: 0.75em 1.5em;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.9em;
+	margin-top: 0.5em;
+	margin-bottom: 1em;
+	transition: all 0.3s ease;
+	display: inline-block;
+	line-height: 1.2;
+}
+
+.outfit-examples-btn:hover {
+	background: rgba(255, 255, 255, 0.2);
+	border-color: rgba(255, 255, 255, 0.5);
+}
+
+.carousel-modal {
+	display: none;
+	position: fixed;
+	z-index: 9999;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.95);
+}
+
+.carousel-modal.active {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	animation: fadeIn 0.3s ease-in-out;
+}
+
+.close-carousel-modal {
+	position: absolute;
+	top: 20px;
+	right: 30px;
+	color: #ffffff;
+	font-size: 40px;
+	font-weight: bold;
+	cursor: pointer;
+	z-index: 10001;
+	transition: color 0.3s ease;
+}
+
+.close-carousel-modal:hover {
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.modal-carousel-container {
+	position: relative;
+	width: 90%;
+	max-width: 800px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.modal-carousel-images {
+	position: relative;
+	width: 100%;
+	height: 70vh;
+	overflow: hidden;
+	border-radius: 8px;
+	touch-action: pan-y;
+}
+
+.modal-carousel-track {
+	display: flex;
+	height: 100%;
+	transition: transform 0.3s ease-out;
+	will-change: transform;
+}
+
+.modal-carousel-track.dragging {
+	transition: none;
+}
+
+.modal-carousel-image {
+	flex-shrink: 0;
+	height: 100%;
+	object-fit: contain;
+	transition: transform 0.3s ease;
+	cursor: zoom-in;
+}
+
+.modal-carousel-image.zoomed {
+	cursor: zoom-out;
+	object-fit: contain;
+}
+
+.carousel-btn {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	background: rgba(0, 0, 0, 0.5);
+	color: #fff;
+	border: none;
+	font-size: 2em;
+	padding: 0.5em;
+	cursor: pointer;
+	z-index: 10;
+	border-radius: 4px;
+	transition: background 0.3s ease;
+	width: 50px;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.carousel-btn:hover {
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.carousel-btn.prev {
+	left: 10px;
+}
+
+.carousel-btn.next {
+	right: 10px;
+}
+
+.modal-carousel-dots {
+	display: flex;
+	justify-content: center;
+	margin-top: 1.5em;
+	gap: 0.5em;
+}
+
+.modal-carousel-dot {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.5);
+	cursor: pointer;
+	transition: background 0.3s ease;
+}
+
+.modal-carousel-dot.active {
+	background: rgba(255, 255, 255, 1);
+}
+
+@media screen and (max-width: 768px) {
+	.modal-carousel-images {
+		height: 60vh;
+	}
+
+	.carousel-btn {
+		display: none;
+	}
+
+	.close-carousel-modal {
+		top: 10px;
+		right: 15px;
+		font-size: 30px;
+	}
+}

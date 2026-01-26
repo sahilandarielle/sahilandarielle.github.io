@@ -1,0 +1,10 @@
+[project]
+name = "sahil-and-arielle"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "httpserver>=1.1.0",
+    "reloadserver>=1.0.0",
+]

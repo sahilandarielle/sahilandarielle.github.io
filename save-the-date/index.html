@@ -128,7 +128,7 @@
 
 			<!-- Footer -->
 			<footer id="footer">
-				<p class="copyright">&copy; Sahil and Arielle 2025</p>
+				<p class="copyright">&copy; Sahil and Arielle 2026</p>
 			</footer>
 
 		</div>
@@ -169,7 +169,10 @@
 				});
 
 				// Close lightbox when clicking the close button
-				closeLightbox.addEventListener('click', closeLightboxFunction);
+				closeLightbox.addEventListener('click', function(e) {
+					e.stopPropagation(); // Prevent event from bubbling up to article modal
+					closeLightboxFunction();
+				});
 
 				// Close lightbox when clicking the background (but prevent closing the gallery modal)
 				lightbox.addEventListener('click', function(e) {
