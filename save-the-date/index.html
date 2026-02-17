@@ -29,9 +29,23 @@
 		<link rel="icon" href="/images/icons/sun-regular.svg">
 
 		<link rel="stylesheet" href="/assets/css/main.css" />
+		<link rel="stylesheet" href="/assets/css/wedding.css" />
 		<noscript><link rel="stylesheet" href="/assets/css/noscript.css" /></noscript>
 	</head>
 	<body class="is-preload">
+
+		<!-- Password Overlay -->
+		<div id="password-overlay" class="password-overlay">
+			<div class="password-container">
+				<h2>Welcome</h2>
+				<p>Please enter the password to view this page</p>
+				<form id="password-form">
+					<input type="password" id="password-input" placeholder="Enter password" autocomplete="off" />
+					<button type="submit" class="button primary">Enter</button>
+				</form>
+				<p id="password-error" class="password-error"></p>
+			</div>
+		</div>
 
 		<!-- Wrapper -->
 		<div id="wrapper">
@@ -148,6 +162,7 @@
 		<script src="/assets/js/breakpoints.min.js"></script>
 		<script src="/assets/js/util.js"></script>
 		<script src="/assets/js/main.js"></script>
+		<script src="/assets/js/wedding.js"></script>
 
 		<!-- Lightbox Script -->
 		<script>
