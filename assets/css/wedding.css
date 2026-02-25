@@ -220,6 +220,12 @@
 	background: rgba(255, 255, 255, 1);
 }
 
+@media screen and (max-width: 736px) {
+	#header nav ul li a {
+		font-weight: bold;
+	}
+}
+
 @media screen and (max-width: 768px) {
 	.modal-carousel-images {
 		height: 60vh;
