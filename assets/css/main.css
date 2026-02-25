@@ -1319,8 +1319,8 @@ input, select, textarea {
 		#bg_wedding:after {
 			transform: scale(1);
 			transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out;
-			background-image: url("/images/wedding/smiling.webp");
-			background-position: center 0%;
+			background-image: url("/images/wedding/walking.webp");
+			background-position: center 80%;
 			background-size: cover;
 			background-repeat: no-repeat;
 			z-index: 1;
@@ -1329,8 +1329,8 @@ input, select, textarea {
 		/* Background for mobile screens */
 		@media screen and (max-width: 1000px) {
 			#bg_wedding:after {
-				background-image: url("/images/wedding/smiling.webp");
-				background-position: 45%;
+				background-image: url("/images/wedding/walking.webp");
+				background-position: 30%;
 			}
 		}
 
