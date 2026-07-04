@@ -8,8 +8,29 @@
 	// SHA-256 hash for password verification
 	const actualCorrectHash = 'b370de14e94142d4a108a79df6d0e265a0ba3fa2e10f57c4b3a892b74c9f84aa';
 
+	// Auth lives in localStorage so it is shared across tabs and survives
+	// iOS Safari purging suspended tabs (sessionStorage is per-tab and was
+	// lost in both cases). Storage access can throw in Safari private
+	// browsing, so failures just mean "not authenticated"/"not persisted".
+	// sessionStorage is still read to migrate guests authenticated before
+	// this change.
+	function readAuth() {
+		try {
+			return localStorage.getItem('weddingAuth') || sessionStorage.getItem('weddingAuth');
+		} catch (err) {
+			return null;
+		}
+	}
+
+	function saveAuth(hash) {
+		try {
+			localStorage.setItem('weddingAuth', hash);
+		} catch (err) {}
+	}
+
 	// Check if already authenticated
-	if (sessionStorage.getItem('weddingAuth') === actualCorrectHash) {
+	if (readAuth() === actualCorrectHash) {
+		saveAuth(actualCorrectHash);
 		passwordOverlay.classList.add('hidden');
 		return;
 	}
@@ -38,7 +59,7 @@
 
 		if (enteredHash === actualCorrectHash) {
 			// Correct password
-			sessionStorage.setItem('weddingAuth', actualCorrectHash);
+			saveAuth(actualCorrectHash);
 			passwordOverlay.classList.add('hidden');
 		} else {
 			// Incorrect password
