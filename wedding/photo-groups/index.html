@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<!--
+	Dimension by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<!-- Google tag (gtag.js) -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-G69NQV7GEW"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-G69NQV7GEW');
+		</script>
+
+		<title>Sahil & Arielle | Photo Groups</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+		<!-- Open Graph meta tags -->
+		<meta property="og:title" content="Sahil & Arielle | Photo Groups" />
+		<meta property="og:description" content="Find your photo group for Sahil and Arielle's wedding" />
+		<meta property="og:image" content="https://sahilandarielle.com/images/wedding/walking_ogtag.webp" />
+		<meta property="og:url" content="https://sahilandarielle.com/wedding/photo-groups" />
+		<meta property="og:type" content="website" />
+		<link rel="icon" href="/images/icons/heart.svg">
+
+		<link rel="stylesheet" href="/assets/css/main.css" />
+		<link rel="stylesheet" href="/assets/css/wedding.css" />
+		<noscript><link rel="stylesheet" href="/assets/css/noscript.css" /></noscript>
+	</head>
+	<body>
+
+		<!-- Photo Group Lookup -->
+		<div class="photo-groups-page">
+			<div class="photo-groups-card">
+				<h2>Photo Groups</h2>
+				<p>After the Hindu ceremony, we'll gather for family and friend photos. Enter your full name to find your photo group.</p>
+
+				<form id="photo-group-form" novalidate>
+					<input type="text" id="photo-group-name" placeholder="Full Name" autocomplete="name" />
+					<div id="photo-group-spouse-wrap" hidden>
+						<p class="photo-group-spouse-hint">More than one guest shares this name! Please also enter your wife's full name.</p>
+						<input type="text" id="photo-group-spouse" placeholder="Wife's Full Name" />
+					</div>
+					<input type="submit" value="Find My Group" class="primary" />
+				</form>
+				<p id="photo-group-notice" class="photo-group-notice" hidden>Photo groups haven't been assigned yet &mdash; please check back soon!</p>
+				<p id="photo-group-error" class="rsvp-lookup-error"></p>
+				<div id="photo-group-result" class="rsvp-result" hidden></div>
+
+				<p class="photo-groups-help"><em>Can't find your name? Grab any member of the wedding party and we'll point you to the right spot.</em></p>
+			</div>
+		</div>
+
+		<!-- Background -->
+		<div id="bg_wedding"></div>
+
+		<!-- Scripts -->
+		<script src="/assets/js/photo-groups.js"></script>
+
+	</body>
+</html>

@@ -70,7 +70,7 @@
 						<li><a href="#details">Schedule</a></li>
 						<li><a href="#accommodations">Accommodations</a></li>
 						<li><a href="#dress-code">Dress Code</a></li>
-						<li><a href="#rsvp">RSVP</a></li>
+						<li><a href="#rsvp">Your RSVP Info</a></li>
 						<li><a href="#gifts">Gifts</a></li>
 						<li><a href="#event-bg">Events</a></li>
 						<li><a href="#things-to-do">Things to Do</a></li>
@@ -149,7 +149,7 @@
 					</ul>
 
 					<div style="text-align: center; margin-top: 2em;">
-						<a href="https://withjoy.com/sahil-m-and-arielle/rsvp" target="_blank" rel="noopener noreferrer" class="button primary rsvp-button">RSVP Now</a>
+						<a href="#rsvp" class="button primary rsvp-button">Your RSVP Info</a>
 					</div>
 				</article>
 
@@ -280,16 +280,28 @@
 
 				<!-- RSVP -->
 				<article id="rsvp">
-					<h2 class="major">RSVP</h2>
-					<p>We're so excited to celebrate with you! Our RSVP portal is now open.</p>
+					<h2 class="major">YOUR RSVP INFO</h2>
+					<p>We're so excited to celebrate with you! Look up your RSVP below to see which events you're attending and any allergies we have on file.</p>
 
-					<p><strong>Please RSVP by May 1st, 2026</strong></p>
+					<form id="rsvp-lookup-form" novalidate>
+						<div class="fields">
+							<div class="field half">
+								<label for="rsvp-name">Full Name</label>
+								<input type="text" id="rsvp-name" name="name" placeholder="As it appeared on your invitation" autocomplete="name" />
+							</div>
+							<div class="field half">
+								<label for="rsvp-email">Email</label>
+								<input type="email" id="rsvp-email" name="email" placeholder="Email used to RSVP" autocomplete="email" />
+							</div>
+						</div>
+						<ul class="actions">
+							<li><input type="submit" value="View My RSVP" class="primary" /></li>
+						</ul>
+					</form>
+					<p id="rsvp-lookup-error" class="rsvp-lookup-error"></p>
+					<div id="rsvp-result" class="rsvp-result" hidden></div>
 
-					<div style="text-align: center; margin-top: 2em;">
-						<a href="https://withjoy.com/sahil-m-and-arielle/rsvp" target="_blank" rel="noopener noreferrer" class="button primary icon solid fa-envelope rsvp-button">RSVP on WithJoy</a>
-					</div>
-
-					<p style="margin-top: 2em; font-size: 0.9em;"><em>If you have any questions or need assistance with your RSVP, please don't hesitate to reach out to us directly.</em></p>
+					<p style="margin-top: 2em; font-size: 0.9em;"><em>Need to make a change, or can't find your RSVP? Please don't hesitate to reach out to us directly.</em></p>
 				</article>
 
 			</div>

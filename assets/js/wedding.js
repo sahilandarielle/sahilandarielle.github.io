@@ -52,6 +52,166 @@
 	passwordInput.focus();
 })();
 
+// RSVP Lookup
+// Records in rsvp-data.json are AES-GCM encrypted with keys derived from each
+// guest's name + email, so the file reveals nothing on its own. Derivation
+// here must stay in sync with scripts/build-rsvp-data.mjs.
+document.addEventListener('DOMContentLoaded', function() {
+	const form = document.getElementById('rsvp-lookup-form');
+	if (!form) return;
+
+	const nameInput = document.getElementById('rsvp-name');
+	const emailInput = document.getElementById('rsvp-email');
+	const errorEl = document.getElementById('rsvp-lookup-error');
+	const resultEl = document.getElementById('rsvp-result');
+	const submitBtn = form.querySelector('input[type="submit"]');
+
+	let dataPromise = null;
+
+	function loadData() {
+		if (!dataPromise) {
+			dataPromise = fetch('/assets/data/rsvp-data.json').then(function(res) {
+				if (!res.ok) throw new Error('Failed to load RSVP data');
+				return res.json();
+			});
+			dataPromise.catch(function() { dataPromise = null; });
+		}
+		return dataPromise;
+	}
+
+	function normalizeName(s) {
+		return s.normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+			.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+	}
+
+	function normalizeEmail(s) {
+		return s.toLowerCase().replace(/\s+/g, '');
+	}
+
+	function base64ToBytes(b64) {
+		const bin = atob(b64);
+		const bytes = new Uint8Array(bin.length);
+		for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+		return bytes;
+	}
+
+	function toHex(buffer) {
+		return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+	}
+
+	async function sha256(str) {
+		return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+	}
+
+	async function tryDecrypt(entries, name, email) {
+		const id = toHex(await sha256('sa-rsvp-id-v1|' + name + '|' + email)).slice(0, 16);
+		const entry = entries[id];
+		if (!entry) return null;
+		const keyBytes = await sha256('sa-rsvp-key-v1|' + name + '|' + email);
+		const key = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt']);
+		try {
+			const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToBytes(entry.iv) }, key, base64ToBytes(entry.ct));
+			return JSON.parse(new TextDecoder().decode(plaintext));
+		} catch (err) {
+			return null;
+		}
+	}
+
+	const STATUS = {
+		yes: { symbol: '✓', text: 'Attending', className: 'rsvp-status-yes' },
+		no: { symbol: '✕', text: 'Not attending', className: 'rsvp-status-no' },
+		pending: { symbol: '—', text: 'No response received', className: 'rsvp-status-pending' }
+	};
+
+	function renderResult(record) {
+		resultEl.innerHTML = '';
+
+		const heading = document.createElement('h3');
+		heading.className = 'minor';
+		heading.textContent = record.n;
+		resultEl.appendChild(heading);
+
+		const list = document.createElement('ul');
+		list.className = 'rsvp-events';
+		record.e.forEach(function(evt) {
+			const status = STATUS[evt[1]] || STATUS.pending;
+			const li = document.createElement('li');
+			const badge = document.createElement('span');
+			badge.className = 'rsvp-status ' + status.className;
+			badge.textContent = status.symbol;
+			const label = document.createElement('strong');
+			label.textContent = evt[0];
+			li.appendChild(badge);
+			li.appendChild(label);
+			li.appendChild(document.createTextNode(' — ' + status.text));
+			list.appendChild(li);
+		});
+		resultEl.appendChild(list);
+
+		const allergies = document.createElement('p');
+		allergies.className = 'rsvp-allergies';
+		const allergiesLabel = document.createElement('strong');
+		allergiesLabel.textContent = 'Allergies / dietary notes: ';
+		allergies.appendChild(allergiesLabel);
+		allergies.appendChild(document.createTextNode(record.a || 'None reported'));
+		resultEl.appendChild(allergies);
+
+		resultEl.hidden = false;
+		resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+	}
+
+	function delay(ms) {
+		return new Promise(function(resolve) { setTimeout(resolve, ms); });
+	}
+
+	function showError(message) {
+		errorEl.textContent = message;
+		errorEl.classList.remove('shake');
+		void errorEl.offsetWidth; // restart the animation on repeat failures
+		errorEl.classList.add('shake');
+	}
+
+	async function findRecord(name, email) {
+		const data = await loadData();
+		const record = await tryDecrypt(data.entries, name, email);
+		if (record) return record;
+		// Guests with no email on file are keyed by name alone.
+		return email ? tryDecrypt(data.entries, name, '') : null;
+	}
+
+	form.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		errorEl.textContent = '';
+		errorEl.classList.remove('shake');
+		resultEl.hidden = true;
+
+		const name = normalizeName(nameInput.value);
+		const email = normalizeEmail(emailInput.value);
+		if (!name) {
+			showError('Please enter your full name.');
+			return;
+		}
+
+		submitBtn.disabled = true;
+		submitBtn.value = 'Searching…';
+		try {
+			// Brief pause so repeat lookups visibly re-run even when instant.
+			const results = await Promise.all([findRecord(name, email), delay(500)]);
+			const record = results[0];
+			if (record) {
+				renderResult(record);
+			} else {
+				showError('No RSVP found. Please enter your full name exactly as it appeared on your invitation, along with the email your household used to RSVP. Still stuck? Reach out to us directly!');
+			}
+		} catch (err) {
+			showError('Something went wrong loading your RSVP info. Please try again.');
+		} finally {
+			submitBtn.disabled = false;
+			submitBtn.value = 'View My RSVP';
+		}
+	});
+});
+
 // Carousel Modal
 document.addEventListener('DOMContentLoaded', function() {
 	const carouselModal = document.getElementById('carousel-modal');

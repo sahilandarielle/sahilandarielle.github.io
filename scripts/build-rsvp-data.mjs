@@ -1,0 +1,263 @@
+// Builds assets/data/rsvp-data.json and assets/data/photo-groups.json from
+// assets/wedding_guest_list_final.csv.
+//
+// Each guest's RSVP record is AES-256-GCM encrypted with a key derived from
+// their normalized name + email, and indexed by a hash of the same pair.
+// The published JSON therefore exposes no names, emails, or RSVP details;
+// a record can only be decrypted by someone who knows a guest's exact name
+// and the email on file for their household. Guests whose household has no
+// email on file get a name-only ("" email) fallback entry.
+//
+// Photo group records (for wedding/photo-groups, the QR-code page on printed
+// programs) are keyed by name alone and hold the guest's group number plus
+// the names in that group. They're built from a "Photo Group" column (any
+// header matching /photo\s*group/i); until that column exists in the CSV,
+// photo-groups.json is written with no entries and the page says groups
+// haven't been assigned yet.
+//
+// Usage: node scripts/build-rsvp-data.mjs [csvPath]
+// Re-run whenever the CSV changes. The CSV itself is gitignored — never
+// commit or deploy it.
+
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { createHash, createCipheriv } from 'node:crypto';
+import { homedir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const CSV_PATH = process.argv[2] ? resolve(process.argv[2]) : join(homedir(), 'Downloads', 'Wedding Guest List.csv');
+const OUT_PATH = join(ROOT, 'assets', 'data', 'rsvp-data.json');
+const PG_OUT_PATH = join(ROOT, 'assets', 'data', 'photo-groups.json');
+
+// --- CSV parsing (handles quoted fields with embedded newlines) ---
+
+function parseCsv(text) {
+	if (text.charCodeAt(0) === 0xfeff) text = text.slice(1); // strip BOM
+	const rows = [];
+	let row = [], field = '', inQuotes = false;
+	for (let i = 0; i < text.length; i++) {
+		const c = text[i];
+		if (inQuotes) {
+			if (c === '"') {
+				if (text[i + 1] === '"') { field += '"'; i++; }
+				else inQuotes = false;
+			} else field += c;
+		} else if (c === '"') {
+			inQuotes = true;
+		} else if (c === ',') {
+			row.push(field); field = '';
+		} else if (c === '\n' || c === '\r') {
+			if (c === '\r' && text[i + 1] === '\n') i++;
+			row.push(field); field = '';
+			if (row.length > 1 || row[0] !== '') rows.push(row);
+			row = [];
+		} else field += c;
+	}
+	if (field !== '' || row.length > 0) { row.push(field); rows.push(row); }
+	return rows;
+}
+
+// --- Normalization (must match the client logic in assets/js/wedding.js) ---
+
+function normName(s) {
+	return s.normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+		.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function normEmail(s) {
+	return s.toLowerCase().replace(/\s+/g, '');
+}
+
+// --- Crypto helpers ---
+
+const sha256 = (s) => createHash('sha256').update(s, 'utf8').digest();
+
+// prefix 'sa-rsvp' + secret 'name|email' → RSVP entries (matches wedding.js);
+// prefix 'sa-pg' + secret 'name' → photo group entries (matches photo-groups.js).
+function encryptEntry(prefix, secret, plaintext) {
+	const id = sha256(`${prefix}-id-v1|${secret}`).toString('hex').slice(0, 16);
+	const key = sha256(`${prefix}-key-v1|${secret}`);
+	// Deterministic IV keeps rebuilds diff-friendly; safe because each
+	// (key, plaintext) pair is unique per guest.
+	const iv = sha256(`${prefix}-iv-v1|${id}|${plaintext}`).subarray(0, 12);
+	const cipher = createCipheriv('aes-256-gcm', key, iv);
+	const ct = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final(), cipher.getAuthTag()]);
+	return { id, iv: iv.toString('base64'), ct: ct.toString('base64') };
+}
+
+// --- Guest list processing ---
+
+const EVENTS = [
+	{ col: 'RSVP Mehndi', key: 'mehndi', label: 'Mehndi (Thursday)' },
+	{ col: 'RSVP Haldi', key: 'haldi', label: 'Grah Shanti & Haldi (Friday morning)' },
+	{ col: 'RSVP Garba', key: 'garba', label: 'Garba (Friday evening)' },
+	{ col: 'RSVP Indian', key: 'indian', label: 'Jaan Prasthaan & Hindu Ceremony (Saturday morning)' },
+	{ col: 'RSVP Reception', key: 'reception', label: 'American Ceremony & Reception (Saturday evening)' },
+];
+
+const INVITE_SETS = {
+	'All Events': ['mehndi', 'haldi', 'garba', 'indian', 'reception'],
+	'Haldi + Garba + Wedding': ['haldi', 'garba', 'indian', 'reception'],
+	'Garba + Wedding': ['garba', 'indian', 'reception'],
+	'India Invite': ['garba', 'indian', 'reception'],
+};
+
+function statusOf(raw) {
+	const v = raw.trim();
+	if (v === 'Attending') return 'yes';
+	if (v === 'Not Attending') return 'no';
+	if (v === 'Not Invited') return null; // hidden
+	if (v === 'Unanswered' || v === '') return 'pending';
+	console.warn(`  ! Unknown RSVP status "${v}" — treating as no response`);
+	return 'pending';
+}
+
+const csv = parseCsv(readFileSync(CSV_PATH, 'utf8'));
+const header = csv[0];
+const col = (name) => {
+	const i = header.indexOf(name);
+	if (i === -1) throw new Error(`Missing CSV column: ${name}`);
+	return i;
+};
+const iName = col('Name'), iInvite = col('Wedding Invite'), iEmail = col('Email');
+const iAddress = col('Address'), iAddressedTo = col('Addressed To');
+const iAllergies = col('Allergies');
+const eventCols = EVENTS.map((e) => ({ ...e, i: col(e.col) }));
+
+// Group rows into households: a row continues the previous household when its
+// Address or Addressed To column is the ditto mark.
+const households = [];
+for (const row of csv.slice(1)) {
+	const name = (row[iName] || '').trim();
+	if (!name) continue;
+	const cont = row[iAddress]?.trim() === '↑' || row[iAddressedTo]?.trim() === '↑';
+	if (!cont || households.length === 0) households.push([]);
+	households[households.length - 1].push(row);
+}
+
+const seenNames = new Map();
+const entries = {};
+const owners = {}; // id -> "name|email", for collision detection
+let people = 0, nameOnly = [];
+
+for (const hh of households) {
+	const hhEmails = [...new Set(hh.map((r) => normEmail(r[iEmail] || '')).filter(Boolean))];
+	for (const row of hh) {
+		const displayName = row[iName].trim();
+		const name = normName(displayName);
+		people++;
+		if (seenNames.has(name)) console.warn(`  ! Duplicate guest name: "${displayName}"`);
+		seenNames.set(name, true);
+
+		const invite = (row[iInvite] || '').trim();
+		let invited = INVITE_SETS[invite];
+		if (!invited) {
+			console.warn(`  ! Unknown invite type "${invite}" for ${displayName} — inferring from statuses`);
+			invited = eventCols.map((e) => e.key);
+		}
+
+		const events = [];
+		for (const e of eventCols) {
+			if (!invited.includes(e.key)) continue;
+			const status = statusOf(row[e.i] || '');
+			if (status !== null) events.push([e.label, status]);
+		}
+		const record = JSON.stringify({
+			n: displayName,
+			e: events,
+			a: (row[iAllergies] || '').trim(),
+		});
+
+		const emails = hhEmails.length ? hhEmails : [''];
+		if (!hhEmails.length) nameOnly.push(displayName);
+		for (const email of emails) {
+			const secret = `${name}|${email}`;
+			const { id, iv, ct } = encryptEntry('sa-rsvp', secret, record);
+			if (owners[id] && owners[id] !== secret)
+				throw new Error(`ID collision: "${secret}" vs "${owners[id]}" — disambiguate in the CSV`);
+			owners[id] = secret;
+			entries[id] = { iv, ct };
+		}
+	}
+}
+
+const out = { v: 1, entries: Object.fromEntries(Object.entries(entries).sort()) };
+mkdirSync(dirname(OUT_PATH), { recursive: true });
+writeFileSync(OUT_PATH, JSON.stringify(out));
+
+// --- Photo groups (name-only lookup for the QR page on printed programs) ---
+
+const iPhotoGroup = header.findIndex((h) => /photo\s*group/i.test(h));
+const pgEntries = {};
+let pgGuests = 0;
+const groups = new Map(); // group value -> [display names]
+
+if (iPhotoGroup !== -1) {
+	// Collect grouped guests along with their household members, which are
+	// used to disambiguate guests who share a full name.
+	const grouped = [];
+	for (const hh of households) {
+		const hhNames = hh.map((r) => r[iName].trim());
+		for (const row of hh) {
+			const g = (row[iPhotoGroup] || '').trim();
+			if (!g) continue;
+			const displayName = row[iName].trim();
+			if (!eventCols.some((e) => (row[e.i] || '').trim() === 'Attending'))
+				console.warn(`  ! Photo group ${g}: "${displayName}" isn't attending any event — stale assignment? They'll still show in group listings.`);
+			if (!groups.has(g)) groups.set(g, []);
+			groups.get(g).push(displayName);
+			grouped.push({ displayName, name: normName(displayName), g, others: hhNames.filter((n) => n !== displayName) });
+		}
+	}
+
+	const nameCounts = new Map();
+	for (const x of grouped) nameCounts.set(x.name, (nameCounts.get(x.name) || 0) + 1);
+
+	const pgOwners = {}; // secret -> plaintext, collision guard
+	const addEntry = (secret, plaintext) => {
+		if (secret in pgOwners) {
+			if (pgOwners[secret] !== plaintext)
+				console.warn(`  ! Photo group: lookup collision on "${secret}" — keeping the first record.`);
+			return;
+		}
+		pgOwners[secret] = plaintext;
+		const { id, iv, ct } = encryptEntry('sa-pg', secret, plaintext);
+		pgEntries[id] = { iv, ct };
+	};
+
+	for (const x of grouped) {
+		// "all" marks people (the couple) who appear in every photo group;
+		// they get a special record with no member list.
+		const isAll = /^all$/i.test(x.g);
+		const record = JSON.stringify({ n: x.displayName, g: isAll ? 'all' : x.g, m: isAll ? [] : groups.get(x.g) });
+		if (nameCounts.get(x.name) === 1) {
+			addEntry(x.name, record);
+		} else {
+			// Shared name: the name alone resolves to a stub that makes the
+			// page ask for the wife's/household member's name, and the real
+			// record is keyed by name + each other household member's name.
+			addEntry(x.name, JSON.stringify({ n: x.displayName, a: 1 }));
+			if (!x.others.length)
+				console.warn(`  ! Photo group: "${x.displayName}" shares a name but has no household members to disambiguate with — record unreachable.`);
+			for (const other of x.others) addEntry(`${x.name}|${normName(other)}`, record);
+			console.warn(`  ! Photo group: "${x.displayName}" (group ${x.g}) shares a name — unlockable with: ${x.others.join(', ') || 'nobody'}`);
+		}
+		pgGuests++;
+	}
+}
+
+const pgOut = { v: 1, entries: Object.fromEntries(Object.entries(pgEntries).sort()) };
+writeFileSync(PG_OUT_PATH, JSON.stringify(pgOut));
+
+console.log(`Households: ${households.length}`);
+console.log(`Guests: ${people}`);
+console.log(`Lookup entries: ${Object.keys(entries).length}`);
+console.log(`Name-only lookup (no email in household): ${nameOnly.length}`);
+for (const n of nameOnly) console.log(`    - ${n}`);
+console.log(`Wrote ${OUT_PATH}`);
+if (iPhotoGroup === -1) {
+	console.log(`No "Photo Group" column in CSV yet — wrote empty ${PG_OUT_PATH}`);
+} else {
+	console.log(`Photo groups: ${groups.size} groups, ${pgGuests} guests — wrote ${PG_OUT_PATH}`);
+}
