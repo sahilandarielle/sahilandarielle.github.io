@@ -143,31 +143,34 @@ let people = 0, nameOnly = [];
 
 for (const hh of households) {
 	const hhEmails = [...new Set(hh.map((r) => normEmail(r[iEmail] || '')).filter(Boolean))];
-	for (const row of hh) {
-		const displayName = row[iName].trim();
-		const name = normName(displayName);
-		people++;
-		if (seenNames.has(name)) console.warn(`  ! Duplicate guest name: "${displayName}"`);
-		seenNames.set(name, true);
 
+	// Summarize every member first: each member's encrypted record carries
+	// the whole party (`p`) with `si` marking which member looked it up.
+	const party = hh.map((row) => {
+		const displayName = row[iName].trim();
 		const invite = (row[iInvite] || '').trim();
 		let invited = INVITE_SETS[invite];
 		if (!invited) {
 			console.warn(`  ! Unknown invite type "${invite}" for ${displayName} — inferring from statuses`);
 			invited = eventCols.map((e) => e.key);
 		}
-
 		const events = [];
 		for (const e of eventCols) {
 			if (!invited.includes(e.key)) continue;
 			const status = statusOf(row[e.i] || '');
 			if (status !== null) events.push([e.label, status]);
 		}
-		const record = JSON.stringify({
-			n: displayName,
-			e: events,
-			a: (row[iAllergies] || '').trim(),
-		});
+		return { n: displayName, e: events, a: (row[iAllergies] || '').trim() };
+	});
+
+	hh.forEach((row, si) => {
+		const displayName = party[si].n;
+		const name = normName(displayName);
+		people++;
+		if (seenNames.has(name)) console.warn(`  ! Duplicate guest name: "${displayName}"`);
+		seenNames.set(name, true);
+
+		const record = JSON.stringify({ si, p: party });
 
 		const emails = hhEmails.length ? hhEmails : [''];
 		if (!hhEmails.length) nameOnly.push(displayName);
@@ -179,7 +182,7 @@ for (const hh of households) {
 			owners[id] = secret;
 			entries[id] = { iv, ct };
 		}
-	}
+	});
 }
 
 const out = { v: 1, entries: Object.fromEntries(Object.entries(entries).sort()) };
