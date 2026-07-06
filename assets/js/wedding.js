@@ -144,17 +144,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		pending: { symbol: '—', text: 'No response received', className: 'rsvp-status-pending' }
 	};
 
-	function renderResult(record) {
-		resultEl.innerHTML = '';
+	function renderMember(member, isSelf) {
+		const section = document.createElement('div');
+		section.className = 'rsvp-member';
 
 		const heading = document.createElement('h3');
 		heading.className = 'minor';
-		heading.textContent = record.n;
-		resultEl.appendChild(heading);
+		heading.textContent = isSelf ? member.n + ' (you)' : member.n;
+		section.appendChild(heading);
 
 		const list = document.createElement('ul');
 		list.className = 'rsvp-events';
-		record.e.forEach(function(evt) {
+		member.e.forEach(function(evt) {
 			const status = STATUS[evt[1]] || STATUS.pending;
 			const li = document.createElement('li');
 			const badge = document.createElement('span');
@@ -167,16 +168,26 @@ document.addEventListener('DOMContentLoaded', function() {
 			li.appendChild(document.createTextNode(' — ' + status.text));
 			list.appendChild(li);
 		});
-		resultEl.appendChild(list);
+		section.appendChild(list);
 
 		const allergies = document.createElement('p');
 		allergies.className = 'rsvp-allergies';
 		const allergiesLabel = document.createElement('strong');
 		allergiesLabel.textContent = 'Allergies / dietary notes: ';
 		allergies.appendChild(allergiesLabel);
-		allergies.appendChild(document.createTextNode(record.a || 'None reported'));
-		resultEl.appendChild(allergies);
+		allergies.appendChild(document.createTextNode(member.a || 'None reported'));
+		section.appendChild(allergies);
 
+		return section;
+	}
+
+	// A record holds the guest's whole party (`p`); `si` is the index of
+	// the member whose name+email unlocked it.
+	function renderResult(record) {
+		resultEl.innerHTML = '';
+		record.p.forEach(function(member, idx) {
+			resultEl.appendChild(renderMember(member, idx === record.si));
+		});
 		resultEl.hidden = false;
 		resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 	}
