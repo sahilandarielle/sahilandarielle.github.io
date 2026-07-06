@@ -2,11 +2,12 @@
 // assets/wedding_guest_list_final.csv.
 //
 // Each guest's RSVP record is AES-256-GCM encrypted with a key derived from
-// their normalized name + email, and indexed by a hash of the same pair.
-// The published JSON therefore exposes no names, emails, or RSVP details;
-// a record can only be decrypted by someone who knows a guest's exact name
-// and the email on file for their household. Guests whose household has no
-// email on file get a name-only ("" email) fallback entry.
+// their normalized name, and holds the guest's whole party (household). The
+// published JSON therefore exposes no names, emails, or RSVP details; a
+// record can only be decrypted by someone who knows a guest's exact name.
+// Guests who share a full name get an "ambiguous" stub under the bare name
+// (the page then asks for the spouse's name) with the real record keyed by
+// name + each other household member's name.
 //
 // Photo group records (for wedding/photo-groups, the QR-code page on printed
 // programs) are keyed by name alone and hold the guest's group number plus
@@ -65,10 +66,6 @@ function normName(s) {
 		.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function normEmail(s) {
-	return s.toLowerCase().replace(/\s+/g, '');
-}
-
 // --- Crypto helpers ---
 
 const sha256 = (s) => createHash('sha256').update(s, 'utf8').digest();
@@ -120,7 +117,7 @@ const col = (name) => {
 	if (i === -1) throw new Error(`Missing CSV column: ${name}`);
 	return i;
 };
-const iName = col('Name'), iInvite = col('Wedding Invite'), iEmail = col('Email');
+const iName = col('Name'), iInvite = col('Wedding Invite');
 const iAddress = col('Address'), iAddressedTo = col('Addressed To');
 const iAllergies = col('Allergies');
 const eventCols = EVENTS.map((e) => ({ ...e, i: col(e.col) }));
@@ -136,13 +133,33 @@ for (const row of csv.slice(1)) {
 	households[households.length - 1].push(row);
 }
 
-const seenNames = new Map();
 const entries = {};
-const owners = {}; // id -> "name|email", for collision detection
-let people = 0, nameOnly = [];
+const rsvpOwners = {}; // secret -> plaintext, collision guard
+let people = 0, ambiguous = 0;
+
+const addRsvpEntry = (secret, plaintext) => {
+	if (secret in rsvpOwners) {
+		if (rsvpOwners[secret] !== plaintext)
+			console.warn(`  ! RSVP: lookup collision on "${secret}" — keeping the first record.`);
+		return;
+	}
+	rsvpOwners[secret] = plaintext;
+	const { id, iv, ct } = encryptEntry('sa-rsvp', secret, plaintext);
+	entries[id] = { iv, ct };
+};
+
+// Count how many guests share each normalized name (shared names need the
+// spouse-name disambiguation flow).
+const nameCounts = new Map();
+for (const hh of households) {
+	for (const row of hh) {
+		const n = normName(row[iName].trim());
+		nameCounts.set(n, (nameCounts.get(n) || 0) + 1);
+	}
+}
 
 for (const hh of households) {
-	const hhEmails = [...new Set(hh.map((r) => normEmail(r[iEmail] || '')).filter(Boolean))];
+	const hhNames = hh.map((r) => r[iName].trim());
 
 	// Summarize every member first: each member's encrypted record carries
 	// the whole party (`p`) with `si` marking which member looked it up.
@@ -167,20 +184,20 @@ for (const hh of households) {
 		const displayName = party[si].n;
 		const name = normName(displayName);
 		people++;
-		if (seenNames.has(name)) console.warn(`  ! Duplicate guest name: "${displayName}"`);
-		seenNames.set(name, true);
 
 		const record = JSON.stringify({ si, p: party });
-
-		const emails = hhEmails.length ? hhEmails : [''];
-		if (!hhEmails.length) nameOnly.push(displayName);
-		for (const email of emails) {
-			const secret = `${name}|${email}`;
-			const { id, iv, ct } = encryptEntry('sa-rsvp', secret, record);
-			if (owners[id] && owners[id] !== secret)
-				throw new Error(`ID collision: "${secret}" vs "${owners[id]}" — disambiguate in the CSV`);
-			owners[id] = secret;
-			entries[id] = { iv, ct };
+		if (nameCounts.get(name) === 1) {
+			addRsvpEntry(name, record);
+		} else {
+			// Shared name: the bare name resolves to a stub that makes the
+			// page ask for the spouse's/household member's name.
+			ambiguous++;
+			addRsvpEntry(name, JSON.stringify({ n: displayName, a: 1 }));
+			const others = hhNames.filter((n2) => n2 !== displayName);
+			if (!others.length)
+				console.warn(`  ! RSVP: "${displayName}" shares a name but has no household members to disambiguate with — record unreachable.`);
+			for (const other of others) addRsvpEntry(`${name}|${normName(other)}`, record);
+			console.warn(`  ! RSVP: "${displayName}" shares a name — unlockable with: ${others.join(', ') || 'nobody'}`);
 		}
 	});
 }
@@ -254,10 +271,8 @@ const pgOut = { v: 1, entries: Object.fromEntries(Object.entries(pgEntries).sort
 writeFileSync(PG_OUT_PATH, JSON.stringify(pgOut));
 
 console.log(`Households: ${households.length}`);
-console.log(`Guests: ${people}`);
+console.log(`Guests: ${people} (${ambiguous} with shared names needing spouse disambiguation)`);
 console.log(`Lookup entries: ${Object.keys(entries).length}`);
-console.log(`Name-only lookup (no email in household): ${nameOnly.length}`);
-for (const n of nameOnly) console.log(`    - ${n}`);
 console.log(`Wrote ${OUT_PATH}`);
 if (iPhotoGroup === -1) {
 	console.log(`No "Photo Group" column in CSV yet — wrote empty ${PG_OUT_PATH}`);
