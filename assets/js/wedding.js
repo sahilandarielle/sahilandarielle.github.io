@@ -75,17 +75,22 @@
 
 // RSVP Lookup
 // Records in rsvp-data.json are AES-GCM encrypted with keys derived from each
-// guest's name + email, so the file reveals nothing on its own. Derivation
-// here must stay in sync with scripts/build-rsvp-data.mjs.
+// guest's name, so the file reveals nothing on its own. Derivation here must
+// stay in sync with scripts/build-rsvp-data.mjs.
 document.addEventListener('DOMContentLoaded', function() {
 	const form = document.getElementById('rsvp-lookup-form');
 	if (!form) return;
 
 	const nameInput = document.getElementById('rsvp-name');
-	const emailInput = document.getElementById('rsvp-email');
+	const spouseWrap = document.getElementById('rsvp-spouse-wrap');
+	const spouseInput = document.getElementById('rsvp-spouse');
 	const errorEl = document.getElementById('rsvp-lookup-error');
 	const resultEl = document.getElementById('rsvp-result');
 	const submitBtn = form.querySelector('input[type="submit"]');
+
+	// Set when a lookup hits an "ambiguous" stub (guests sharing a full
+	// name); their record is keyed by name + a household member's name.
+	let ambiguousName = null;
 
 	let dataPromise = null;
 
@@ -105,10 +110,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
 	}
 
-	function normalizeEmail(s) {
-		return s.toLowerCase().replace(/\s+/g, '');
-	}
-
 	function base64ToBytes(b64) {
 		const bin = atob(b64);
 		const bytes = new Uint8Array(bin.length);
@@ -124,11 +125,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
 	}
 
-	async function tryDecrypt(entries, name, email) {
-		const id = toHex(await sha256('sa-rsvp-id-v1|' + name + '|' + email)).slice(0, 16);
+	async function tryDecrypt(entries, secret) {
+		const id = toHex(await sha256('sa-rsvp-id-v1|' + secret)).slice(0, 16);
 		const entry = entries[id];
 		if (!entry) return null;
-		const keyBytes = await sha256('sa-rsvp-key-v1|' + name + '|' + email);
+		const keyBytes = await sha256('sa-rsvp-key-v1|' + secret);
 		const key = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt']);
 		try {
 			const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToBytes(entry.iv) }, key, base64ToBytes(entry.ct));
@@ -203,12 +204,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		errorEl.classList.add('shake');
 	}
 
-	async function findRecord(name, email) {
+	async function findRecord(name) {
 		const data = await loadData();
-		const record = await tryDecrypt(data.entries, name, email);
-		if (record) return record;
-		// Guests with no email on file are keyed by name alone.
-		return email ? tryDecrypt(data.entries, name, '') : null;
+		let record = await tryDecrypt(data.entries, name);
+		if (record && record.a === 1) {
+			// Shared name: retry keyed by name + spouse's/household member's name.
+			const spouse = normalizeName(spouseInput.value);
+			if (!spouse) return record; // stub — caller reveals the second box
+			record = await tryDecrypt(data.entries, name + '|' + spouse);
+			return record || { a: 1, miss: true };
+		}
+		return record;
 	}
 
 	form.addEventListener('submit', async function(e) {
@@ -218,22 +224,38 @@ document.addEventListener('DOMContentLoaded', function() {
 		resultEl.hidden = true;
 
 		const name = normalizeName(nameInput.value);
-		const email = normalizeEmail(emailInput.value);
 		if (!name) {
 			showError('Please enter your full name.');
 			return;
+		}
+		if (ambiguousName && name !== ambiguousName) {
+			ambiguousName = null;
+			spouseWrap.hidden = true;
+			spouseInput.value = '';
 		}
 
 		submitBtn.disabled = true;
 		submitBtn.value = 'Searching…';
 		try {
 			// Brief pause so repeat lookups visibly re-run even when instant.
-			const results = await Promise.all([findRecord(name, email), delay(500)]);
+			const results = await Promise.all([findRecord(name), delay(500)]);
 			const record = results[0];
-			if (record) {
+			if (record && record.a === 1) {
+				ambiguousName = name;
+				spouseWrap.hidden = false;
+				if (record.miss) {
+					showError("We couldn't find a match for that combination. Double-check both names — or reach out to us directly!");
+				} else {
+					showError("More than one guest shares your name! Please also enter your spouse's full name.");
+				}
+				spouseInput.focus();
+			} else if (record) {
+				spouseWrap.hidden = true;
+				spouseInput.value = '';
+				ambiguousName = null;
 				renderResult(record);
 			} else {
-				showError('No RSVP found. Please enter your full name exactly as it appeared on your invitation, along with the email your household used to RSVP. Still stuck? Reach out to us directly!');
+				showError('No RSVP found. Please enter your full name exactly as it appeared on your invitation. Still stuck? Reach out to us directly!');
 			}
 		} catch (err) {
 			showError('Something went wrong loading your RSVP info. Please try again.');

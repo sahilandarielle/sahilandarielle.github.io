@@ -285,13 +285,13 @@
 
 					<form id="rsvp-lookup-form" novalidate>
 						<div class="fields">
-							<div class="field half">
+							<div class="field">
 								<label for="rsvp-name">Full Name</label>
 								<input type="text" id="rsvp-name" name="name" placeholder="As it appeared on your invitation" autocomplete="name" />
 							</div>
-							<div class="field half">
-								<label for="rsvp-email">Email</label>
-								<input type="email" id="rsvp-email" name="email" placeholder="Email used to RSVP" autocomplete="email" />
+							<div class="field" id="rsvp-spouse-wrap" hidden>
+								<label for="rsvp-spouse">Spouse's Full Name</label>
+								<input type="text" id="rsvp-spouse" name="spouse" placeholder="To tell guests with the same name apart" />
 							</div>
 						</div>
 						<ul class="actions">

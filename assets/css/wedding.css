@@ -130,6 +130,10 @@
 	border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+#rsvp-spouse-wrap[hidden] {
+	display: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
 	.rsvp-lookup-error.shake {
 		animation: rsvp-shake 0.4s ease;
