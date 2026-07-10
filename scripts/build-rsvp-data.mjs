@@ -14,7 +14,11 @@
 // the names in that group. They're built from a "Photo Group" column (any
 // header matching /photo\s*group/i); until that column exists in the CSV,
 // photo-groups.json is written with no entries and the page says groups
-// haven't been assigned yet.
+// haven't been assigned yet. A cell may list several comma-separated groups
+// ("2, 4") for immediate family who appear in more than one photo; those
+// records carry a `gs` array (one {g, m} per group) instead of the single
+// g/m pair, and "all" (the couple, in every photo) stays a special record
+// with no member list.
 //
 // Usage: node scripts/build-rsvp-data.mjs [csvPath]
 // Re-run whenever the CSV changes. The CSV itself is gitignored — never
@@ -220,14 +224,18 @@ if (iPhotoGroup !== -1) {
 	for (const hh of households) {
 		const hhNames = hh.map((r) => r[iName].trim());
 		for (const row of hh) {
-			const g = (row[iPhotoGroup] || '').trim();
-			if (!g) continue;
+			const cell = (row[iPhotoGroup] || '').trim();
+			if (!cell) continue;
 			const displayName = row[iName].trim();
 			if (!eventCols.some((e) => (row[e.i] || '').trim() === 'Attending'))
-				console.warn(`  ! Photo group ${g}: "${displayName}" isn't attending any event — stale assignment? They'll still show in group listings.`);
-			if (!groups.has(g)) groups.set(g, []);
-			groups.get(g).push(displayName);
-			grouped.push({ displayName, name: normName(displayName), g, others: hhNames.filter((n) => n !== displayName) });
+				console.warn(`  ! Photo group ${cell}: "${displayName}" isn't attending any event — stale assignment? They'll still show in group listings.`);
+			const gs = [...new Set(cell.split(',').map((s) => s.trim()).filter(Boolean))]
+				.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+			for (const g of gs) {
+				if (!groups.has(g)) groups.set(g, []);
+				groups.get(g).push(displayName);
+			}
+			grouped.push({ displayName, name: normName(displayName), gs, others: hhNames.filter((n) => n !== displayName) });
 		}
 	}
 
@@ -248,9 +256,17 @@ if (iPhotoGroup !== -1) {
 
 	for (const x of grouped) {
 		// "all" marks people (the couple) who appear in every photo group;
-		// they get a special record with no member list.
-		const isAll = /^all$/i.test(x.g);
-		const record = JSON.stringify({ n: x.displayName, g: isAll ? 'all' : x.g, m: isAll ? [] : groups.get(x.g) });
+		// they get a special record with no member list. Guests in a single
+		// group keep the original {g, m} shape; immediate family listed in
+		// several groups get a `gs` array with each group's roster.
+		let record;
+		if (x.gs.length === 1 && /^all$/i.test(x.gs[0])) {
+			record = JSON.stringify({ n: x.displayName, g: 'all', m: [] });
+		} else if (x.gs.length === 1) {
+			record = JSON.stringify({ n: x.displayName, g: x.gs[0], m: groups.get(x.gs[0]) });
+		} else {
+			record = JSON.stringify({ n: x.displayName, gs: x.gs.map((g) => ({ g, m: groups.get(g) })) });
+		}
 		if (nameCounts.get(x.name) === 1) {
 			addEntry(x.name, record);
 		} else {
@@ -261,7 +277,7 @@ if (iPhotoGroup !== -1) {
 			if (!x.others.length)
 				console.warn(`  ! Photo group: "${x.displayName}" shares a name but has no household members to disambiguate with — record unreachable.`);
 			for (const other of x.others) addEntry(`${x.name}|${normName(other)}`, record);
-			console.warn(`  ! Photo group: "${x.displayName}" (group ${x.g}) shares a name — unlockable with: ${x.others.join(', ') || 'nobody'}`);
+			console.warn(`  ! Photo group: "${x.displayName}" (group ${x.gs.join(', ')}) shares a name — unlockable with: ${x.others.join(', ') || 'nobody'}`);
 		}
 		pgGuests++;
 	}

@@ -88,6 +88,27 @@ document.addEventListener('DOMContentLoaded', function() {
 		errorEl.classList.add('shake');
 	}
 
+	function groupLabel(g) {
+		return /^\d/.test(g) ? 'Photo Group ' + g : g;
+	}
+
+	function renderMembers(record, members) {
+		const list = document.createElement('ul');
+		list.className = 'photo-group-members';
+		members.forEach(function(member) {
+			const li = document.createElement('li');
+			if (member === record.n) {
+				const self = document.createElement('strong');
+				self.textContent = member + ' (you)';
+				li.appendChild(self);
+			} else {
+				li.textContent = member;
+			}
+			list.appendChild(li);
+		});
+		resultEl.appendChild(list);
+	}
+
 	function renderResult(record) {
 		resultEl.innerHTML = '';
 
@@ -99,27 +120,31 @@ document.addEventListener('DOMContentLoaded', function() {
 		intro.className = 'photo-group-intro';
 		resultEl.appendChild(intro);
 
-		if (record.g === 'all') {
+		// A record holds either one group (g/m) or, for immediate family in
+		// several photos, a `gs` array of {g, m} pairs.
+		const groups = record.gs || [{ g: record.g, m: record.m }];
+
+		if (groups.length === 1 && groups[0].g === 'all') {
 			heading.textContent = 'All Photo Groups';
 			intro.textContent = record.n + ', you\'re in every photo group!';
-		} else {
-			heading.textContent = /^\d/.test(record.g) ? 'Photo Group ' + record.g : record.g;
+		} else if (groups.length === 1) {
+			heading.textContent = groupLabel(groups[0].g);
 			intro.textContent = 'In this group:';
-
-			const list = document.createElement('ul');
-			list.className = 'photo-group-members';
-			record.m.forEach(function(member) {
-				const li = document.createElement('li');
-				if (member === record.n) {
-					const self = document.createElement('strong');
-					self.textContent = member + ' (you)';
-					li.appendChild(self);
-				} else {
-					li.textContent = member;
-				}
-				list.appendChild(li);
+			renderMembers(record, groups[0].m);
+		} else {
+			const nums = groups.map(function(x) { return x.g; });
+			heading.textContent = 'Photo Groups ' + nums.slice(0, -1).join(', ') + ' & ' + nums[nums.length - 1];
+			intro.textContent = record.n + ', you\'re in ' + groups.length + ' photo groups!';
+			groups.forEach(function(group) {
+				const sub = document.createElement('p');
+				sub.className = 'photo-group-intro';
+				const label = document.createElement('strong');
+				label.textContent = groupLabel(group.g);
+				sub.appendChild(label);
+				sub.appendChild(document.createTextNode(' — in this group:'));
+				resultEl.appendChild(sub);
+				renderMembers(record, group.m);
 			});
-			resultEl.appendChild(list);
 		}
 
 		resultEl.hidden = false;

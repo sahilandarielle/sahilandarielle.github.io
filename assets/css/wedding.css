@@ -266,6 +266,11 @@
 	margin-bottom: 0.25em;
 }
 
+/* Space between stacked group rosters for guests in multiple photo groups */
+.photo-group-members + .photo-group-intro {
+	margin-top: 1.5em;
+}
+
 .photo-groups-help {
 	margin-top: 1.5em;
 	margin-bottom: 0;
