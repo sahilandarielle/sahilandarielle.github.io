@@ -94,10 +94,10 @@ input, select, textarea {
 		box-sizing: inherit;
 	}
 
-	html {
-		background: #1b1f22;
-	}
-
+	/* Note: <html> deliberately has NO background — that lets the body
+	   background propagate to the canvas, which iOS Safari paints across
+	   the entire window (behind the glass toolbar, status bar and home
+	   indicator), unlike fixed elements which it clips unreliably. */
 	body {
 		background: #1b1f22;
 		/* With viewport-fit=cover the layout extends under the status bar, notch
@@ -1137,8 +1137,6 @@ input, select, textarea {
 /* BG */
 
 	#bg_engagement {
-		transform: scale(1.0);
-		backface-visibility: hidden;
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -1203,8 +1201,6 @@ input, select, textarea {
 		}
 
 	#bg_home {
-		transform: scale(1.0);
-		backface-visibility: hidden;
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -1268,8 +1264,6 @@ input, select, textarea {
 		}
 
 	#bg_std {
-		transform: scale(1.0);
-		backface-visibility: hidden;
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -1334,8 +1328,6 @@ input, select, textarea {
 	}
 
 	#bg_wedding {
-		transform: scale(1.0);
-		backface-visibility: hidden;
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -1397,6 +1389,49 @@ input, select, textarea {
 
 	body.is-preload #bg_wedding:before {
 		background-color: #000000;
+	}
+
+/* Canvas backgrounds */
+
+	/* The body background propagates to the canvas (html has no background),
+	   and iOS Safari paints the canvas across the whole window — including
+	   behind the glass toolbar, the status bar and the home indicator, which
+	   fixed elements cannot reliably reach on iOS 26. Mirror each page's
+	   photo here so those areas show the photo instead of a dark strip. */
+	body:has(#bg_engagement) {
+		background: #1b1f22 url("/images/engagement/proposal.webp") center / cover no-repeat;
+	}
+
+	body:has(#bg_home) {
+		background: #1b1f22 url("/images/home/cliff_kiss.webp") center 15% / cover no-repeat;
+	}
+
+	body:has(#bg_std) {
+		background: #1b1f22 url("/images/std/tam_looking.jpeg") center / cover no-repeat;
+	}
+
+	body:has(#bg_wedding) {
+		background: #1b1f22 url("/images/wedding/walking.webp") center 80% / cover no-repeat;
+	}
+
+	@media screen and (max-width: 1000px) {
+
+		body:has(#bg_engagement) {
+			background-position: 28%;
+		}
+
+		body:has(#bg_home) {
+			background-image: url("/images/home/half_dome_ledge.webp");
+		}
+
+		body:has(#bg_std) {
+			background-position: 28%;
+		}
+
+		body:has(#bg_wedding) {
+			background-position: 30%;
+		}
+
 	}
 
 /* Wrapper */
