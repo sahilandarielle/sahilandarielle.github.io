@@ -1386,39 +1386,39 @@ input, select, textarea {
 	   indicator (see the note on body above). It sits underneath the
 	   fixed #bg_* layer, which still provides the stationary backdrop
 	   and blur/zoom effects inside the viewport. */
-	body:has(#bg_engagement):before, body:has(#bg_engagement):after {
+	body:has(#bg_engagement):before {
 		background-image: url("/images/engagement/proposal.webp");
 	}
 
-	body:has(#bg_home):before, body:has(#bg_home):after {
+	body:has(#bg_home):before {
 		background-image: url("/images/home/cliff_kiss.webp");
 		background-position: center 15%;
 	}
 
-	body:has(#bg_std):before, body:has(#bg_std):after {
+	body:has(#bg_std):before {
 		background-image: url("/images/std/tam_looking.jpeg");
 	}
 
-	body:has(#bg_wedding):before, body:has(#bg_wedding):after {
+	body:has(#bg_wedding):before {
 		background-image: url("/images/wedding/walking.webp");
 		background-position: center 80%;
 	}
 
 	@media screen and (max-width: 1000px) {
 
-		body:has(#bg_engagement):before, body:has(#bg_engagement):after {
+		body:has(#bg_engagement):before {
 			background-position: 28%;
 		}
 
-		body:has(#bg_home):before, body:has(#bg_home):after {
+		body:has(#bg_home):before {
 			background-image: url("/images/home/half_dome_ledge.webp");
 		}
 
-		body:has(#bg_std):before, body:has(#bg_std):after {
+		body:has(#bg_std):before {
 			background-position: 28%;
 		}
 
-		body:has(#bg_wedding):before, body:has(#bg_wedding):after {
+		body:has(#bg_wedding):before {
 			background-position: 30%;
 		}
 
@@ -1437,53 +1437,39 @@ input, select, textarea {
 			display: none;
 		}
 
-		/* Let the photo run past the first screenful so scrolling reveals
-		   more of it instead of ending exactly at the viewport edge. The
-		   image zooms to cover the taller layer (background-size: cover),
-		   and the extra height is scrollable because the absolutely
-		   positioned layer extends the document's scrollable overflow. */
-		body:before {
-			height: 110vh;
-			height: 110lvh;
-			transition: opacity 0.325s ease-in-out;
-		}
-
-		/* Second photo layer: the classic viewport-fit crop, pinned to
-		   the viewport, shown behind open modals. Cross-fading between
-		   the two layers (composited opacity, matching the article fade)
-		   avoids the visible crop snap that resizing one layer causes.
-		   pointer-events: none keeps it from swallowing modal taps. */
-		body:after {
-			content: '';
-			display: block;
-			position: fixed;
-			top: 0;
-			left: 0;
-			right: 0;
+		/* Only the foreground scrolls on iOS: the document itself never
+		   moves (everything fits within the 100lvh photo layer) and
+		   #wrapper becomes the scroll container for the header, nav,
+		   modals and copyright. The in-flow body:before photo therefore
+		   sits permanently behind the glass toolbar and status bar, with
+		   no seams and no crop changes at any scroll position or in any
+		   modal state. main.js resets #wrapper's scroll position wherever
+		   it resets the window's. */
+		#wrapper {
 			height: 100vh;
 			height: 100lvh;
-			background-position: center;
-			background-size: cover;
-			background-repeat: no-repeat;
+			overflow-y: auto;
+		}
+
+		/* Invisible spacer guaranteeing the wrapper 10lvh of scroll range
+		   at rest (absolutely positioned boxes extend a scroller's
+		   scrollable overflow without becoming flex items, so the
+		   header's first-screen centering is unaffected). */
+		#wrapper:after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 1px;
+			height: calc(100% + 10lvh);
 			pointer-events: none;
-			opacity: 0;
-			transition: opacity 0.325s ease-in-out;
-			z-index: 0;
 		}
 
-		body.is-article-visible:before {
-			opacity: 0;
-		}
-
-		body.is-article-visible:after {
-			opacity: 1;
-		}
-
-		/* Paint the copyright at the bottom of the extended photo instead
-		   of mid-page. Relative positioning keeps its flex slot, so the
-		   header stays centered on the first screenful; the wrapper's
-		   bottom padding (incl. the home-indicator inset) still provides
-		   the spacing at the new position. */
+		/* Paint the copyright below the first screenful, at the end of
+		   the wrapper's scroll range. Relative positioning keeps its flex
+		   slot, so the header stays centered on the first screenful; the
+		   wrapper's bottom padding (incl. the home-indicator inset) still
+		   provides the spacing at the new position. */
 		body:has(#bg_engagement) #footer,
 		body:has(#bg_home) #footer,
 		body:has(#bg_std) #footer,

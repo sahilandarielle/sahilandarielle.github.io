@@ -144,6 +144,7 @@
 											$window
 												.scrollTop(0)
 												.triggerHandler('resize.flexbox-fix');
+												$('#wrapper').scrollTop(0);
 
 										// Unlock.
 											setTimeout(function() {
@@ -183,6 +184,7 @@
 											$window
 												.scrollTop(0)
 												.triggerHandler('resize.flexbox-fix');
+												$('#wrapper').scrollTop(0);
 
 										// Unlock.
 											setTimeout(function() {
@@ -242,6 +244,7 @@
 								$window
 									.scrollTop(0)
 									.triggerHandler('resize.flexbox-fix');
+									$('#wrapper').scrollTop(0);
 
 							return;
 
@@ -273,6 +276,7 @@
 									$window
 										.scrollTop(0)
 										.triggerHandler('resize.flexbox-fix');
+										$('#wrapper').scrollTop(0);
 
 								// Unlock.
 									setTimeout(function() {
