@@ -4,6 +4,20 @@
 // printed programs). Derivation must stay in sync with
 // scripts/build-rsvp-data.mjs (the 'sa-pg' prefix).
 document.addEventListener('DOMContentLoaded', function() {
+	// The main wedding page is password-protected, but guests arriving here
+	// from the printed QR code shouldn't need to know it. Seed the auth token
+	// wedding.js checks (must match actualCorrectHash there) before the link
+	// navigates. Storage can throw in Safari private browsing; the guest then
+	// just gets the normal password prompt.
+	const backLink = document.getElementById('photo-groups-back');
+	if (backLink) {
+		backLink.addEventListener('click', function() {
+			try {
+				localStorage.setItem('weddingAuth', 'b370de14e94142d4a108a79df6d0e265a0ba3fa2e10f57c4b3a892b74c9f84aa');
+			} catch (err) {}
+		});
+	}
+
 	const form = document.getElementById('photo-group-form');
 	if (!form) return;
 
