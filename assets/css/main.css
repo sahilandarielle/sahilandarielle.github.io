@@ -1664,6 +1664,7 @@ input, select, textarea {
 						}
 
 						#header nav ul li a {
+							font-size: 1.2rem;
 							height: 3rem;
 							line-height: 3rem;
 							min-width: 0;
