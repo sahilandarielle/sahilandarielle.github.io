@@ -1443,8 +1443,8 @@ input, select, textarea {
 		   and the extra height is scrollable because the absolutely
 		   positioned layer extends the document's scrollable overflow. */
 		body:before {
-			height: 120vh;
-			height: 120lvh;
+			height: 110vh;
+			height: 110lvh;
 			transition: opacity 0.325s ease-in-out;
 		}
 
@@ -1489,7 +1489,7 @@ input, select, textarea {
 		body:has(#bg_std) #footer,
 		body:has(#bg_wedding) #footer {
 			position: relative;
-			top: 20lvh;
+			top: 10lvh;
 		}
 
 	}
