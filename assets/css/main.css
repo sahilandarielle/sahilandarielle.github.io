@@ -1446,6 +1446,16 @@ input, select, textarea {
 			display: none;
 		}
 
+		/* Let the photo run past the first screenful so scrolling reveals
+		   more of it instead of ending exactly at the viewport edge. The
+		   image zooms to cover the taller layer (background-size: cover),
+		   and the extra height is scrollable because the absolutely
+		   positioned layer extends the document's scrollable overflow. */
+		body:before {
+			height: 120vh;
+			height: 120lvh;
+		}
+
 	}
 
 /* Wrapper */
