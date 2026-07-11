@@ -435,6 +435,10 @@
 	#header nav ul li a {
 		font-weight: bold;
 	}
+
+	.outfit-examples-btn {
+		font-size: 1.1em;
+	}
 }
 
 @media screen and (max-width: 768px) {
