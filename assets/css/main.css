@@ -1451,6 +1451,14 @@ input, select, textarea {
 			overflow-y: auto;
 		}
 
+		/* 100lvh still ends partway through Safari's expanded glass
+		   toolbar; overshoot a little so the photo reaches the very
+		   bottom of the window (the excess hides behind the glass). */
+		body:before {
+			height: 108vh;
+			height: 108lvh;
+		}
+
 		/* Invisible spacer guaranteeing the wrapper 10lvh of scroll range
 		   at rest (absolutely positioned boxes extend a scroller's
 		   scrollable overflow without becoming flex items, so the
