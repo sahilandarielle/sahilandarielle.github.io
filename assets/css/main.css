@@ -1424,6 +1424,21 @@ input, select, textarea {
 
 	}
 
+	/* On iOS the fixed backdrop cannot be composited behind the glass
+	   toolbar and status bar, and stacking it over the in-flow photo
+	   layer shows a seam at the safe-area edges once the page scrolls
+	   (one layer moves, the other doesn't). Hide it there and let the
+	   in-flow body:before photo be the sole backdrop; it scrolls with
+	   the page so the glass areas always continue it seamlessly.
+	   (-webkit-touch-callout exists only on iOS/iPadOS WebKit.) */
+	@supports (-webkit-touch-callout: none) {
+
+		#bg_engagement, #bg_home, #bg_std, #bg_wedding {
+			display: none;
+		}
+
+	}
+
 /* Wrapper */
 
 	#wrapper {
