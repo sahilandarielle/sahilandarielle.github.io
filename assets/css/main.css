@@ -1431,6 +1431,10 @@ input, select, textarea {
 	   always open and close with the page scrolled to the top. */
 	body.is-article-visible:before {
 		position: fixed;
+		/* Modals sit over the classic viewport-fit crop, not the taller
+		   scrollable one used at rest on iOS. */
+		height: 100vh;
+		height: 100lvh;
 	}
 
 	/* On iOS the fixed backdrop cannot be composited behind the glass
@@ -1454,6 +1458,19 @@ input, select, textarea {
 		body:before {
 			height: 120vh;
 			height: 120lvh;
+		}
+
+		/* Paint the copyright at the bottom of the extended photo instead
+		   of mid-page. Relative positioning keeps its flex slot, so the
+		   header stays centered on the first screenful; the wrapper's
+		   bottom padding (incl. the home-indicator inset) still provides
+		   the spacing at the new position. */
+		body:has(#bg_engagement) #footer,
+		body:has(#bg_home) #footer,
+		body:has(#bg_std) #footer,
+		body:has(#bg_wedding) #footer {
+			position: relative;
+			top: 20lvh;
 		}
 
 	}
