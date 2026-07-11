@@ -94,8 +94,16 @@ input, select, textarea {
 		box-sizing: inherit;
 	}
 
+	html {
+		background: #1b1f22;
+	}
+
 	body {
 		background: #1b1f22;
+		/* With viewport-fit=cover the layout extends under the status bar, notch
+		   and home indicator; keep in-flow content inside the safe areas while
+		   the fixed backgrounds paint edge-to-edge behind them. */
+		padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 	}
 
 		body.is-preload *, body.is-preload *:before, body.is-preload *:after {
@@ -1136,6 +1144,10 @@ input, select, textarea {
 		left: 0;
 		width: 100%;
 		height: 100vh;
+		/* Large viewport height: on iOS Safari this includes the safe areas
+		   (with viewport-fit=cover), so the photo extends behind the status
+		   bar and the bottom toolbar instead of leaving dark strips. */
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1193,6 +1205,10 @@ input, select, textarea {
 		left: 0;
 		width: 100%;
 		height: 100vh;
+		/* Large viewport height: on iOS Safari this includes the safe areas
+		   (with viewport-fit=cover), so the photo extends behind the status
+		   bar and the bottom toolbar instead of leaving dark strips. */
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1249,6 +1265,10 @@ input, select, textarea {
 		left: 0;
 		width: 100%;
 		height: 100vh;
+		/* Large viewport height: on iOS Safari this includes the safe areas
+		   (with viewport-fit=cover), so the photo extends behind the status
+		   bar and the bottom toolbar instead of leaving dark strips. */
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1306,6 +1326,10 @@ input, select, textarea {
 		left: 0;
 		width: 100%;
 		height: 100vh;
+		/* Large viewport height: on iOS Safari this includes the safe areas
+		   (with viewport-fit=cover), so the photo extends behind the status
+		   bar and the bottom toolbar instead of leaving dark strips. */
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1376,6 +1400,8 @@ input, select, textarea {
 		justify-content: space-between;
 		position: relative;
 		min-height: 100vh;
+		/* Fill the screen minus the safe-area padding on body */
+		min-height: calc(100lvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 		width: 100%;
 		padding: 4rem 2rem;
 		z-index: 3;
