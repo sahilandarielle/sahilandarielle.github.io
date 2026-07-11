@@ -281,6 +281,16 @@
 	margin-top: 1.75em;
 }
 
+/* Buttons: undo the template's bold weight on primary buttons
+   (Source Sans Pro only loads weights 300 and 600) */
+input[type="submit"].primary,
+input[type="reset"].primary,
+input[type="button"].primary,
+button.primary,
+.button.primary {
+	font-weight: 300;
+}
+
 /* Carousel Modal Styles */
 .outfit-examples-btn {
 	background: rgba(255, 255, 255, 0.1);
