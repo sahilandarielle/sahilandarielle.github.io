@@ -95,15 +95,30 @@ input, select, textarea {
 	}
 
 	/* Note: <html> deliberately has NO background — that lets the body
-	   background propagate to the canvas, which iOS Safari paints across
-	   the entire window (behind the glass toolbar, status bar and home
-	   indicator), unlike fixed elements which it clips unreliably. */
+	   background propagate to the canvas so the window edges never flash
+	   white. The photo itself is painted by body:before (see the "Page
+	   photo layer" section): iOS 26 Safari only composites real in-flow
+	   document pixels behind its glass toolbar and status bar — fixed
+	   elements are clipped at the safe-area edges, and the canvas image
+	   stops at the layout viewport. */
 	body {
 		background: #1b1f22;
-		/* With viewport-fit=cover the layout extends under the status bar, notch
-		   and home indicator; keep in-flow content inside the safe areas while
-		   the fixed backgrounds paint edge-to-edge behind them. */
-		padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+		position: relative;
+	}
+
+	body:before {
+		content: '';
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 100vh;
+		height: 100lvh;
+		background-position: center;
+		background-size: cover;
+		background-repeat: no-repeat;
+		z-index: 0;
 	}
 
 		body.is-preload *, body.is-preload *:before, body.is-preload *:after {
@@ -1142,12 +1157,8 @@ input, select, textarea {
 		left: 0;
 		right: 0;
 		width: 100%;
-		/* iOS 26 Safari only composites fixed elements into the safe areas
-		   (behind the status bar and the glass toolbar) when they are
-		   shorter than ~50vh, even with viewport-fit=cover. Keep this
-		   container short; the :before/:after layers below overflow it to
-		   paint the actual full-screen photo. */
-		height: 40vh;
+		height: 100vh;
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1158,10 +1169,7 @@ input, select, textarea {
 			top: 0;
 			left: 0;
 			width: 100%;
-			/* Full-screen photo layer, deliberately taller than the short
-			   fixed container above (see the iOS 26 note there). */
-			height: 100vh;
-			height: 100lvh;
+			height: 100%;
 		}
 
 		#bg_engagement:before {
@@ -1206,12 +1214,8 @@ input, select, textarea {
 		left: 0;
 		right: 0;
 		width: 100%;
-		/* iOS 26 Safari only composites fixed elements into the safe areas
-		   (behind the status bar and the glass toolbar) when they are
-		   shorter than ~50vh, even with viewport-fit=cover. Keep this
-		   container short; the :before/:after layers below overflow it to
-		   paint the actual full-screen photo. */
-		height: 40vh;
+		height: 100vh;
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1222,10 +1226,7 @@ input, select, textarea {
 			top: 0;
 			left: 0;
 			width: 100%;
-			/* Full-screen photo layer, deliberately taller than the short
-			   fixed container above (see the iOS 26 note there). */
-			height: 100vh;
-			height: 100lvh;
+			height: 100%;
 		}
 
 		#bg_home:before {
@@ -1269,12 +1270,8 @@ input, select, textarea {
 		left: 0;
 		right: 0;
 		width: 100%;
-		/* iOS 26 Safari only composites fixed elements into the safe areas
-		   (behind the status bar and the glass toolbar) when they are
-		   shorter than ~50vh, even with viewport-fit=cover. Keep this
-		   container short; the :before/:after layers below overflow it to
-		   paint the actual full-screen photo. */
-		height: 40vh;
+		height: 100vh;
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1285,10 +1282,7 @@ input, select, textarea {
 			top: 0;
 			left: 0;
 			width: 100%;
-			/* Full-screen photo layer, deliberately taller than the short
-			   fixed container above (see the iOS 26 note there). */
-			height: 100vh;
-			height: 100lvh;
+			height: 100%;
 		}
 
 		#bg_std:before {
@@ -1333,12 +1327,8 @@ input, select, textarea {
 		left: 0;
 		right: 0;
 		width: 100%;
-		/* iOS 26 Safari only composites fixed elements into the safe areas
-		   (behind the status bar and the glass toolbar) when they are
-		   shorter than ~50vh, even with viewport-fit=cover. Keep this
-		   container short; the :before/:after layers below overflow it to
-		   paint the actual full-screen photo. */
-		height: 40vh;
+		height: 100vh;
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1349,10 +1339,7 @@ input, select, textarea {
 			top: 0;
 			left: 0;
 			width: 100%;
-			/* Full-screen photo layer, deliberately taller than the short
-			   fixed container above (see the iOS 26 note there). */
-			height: 100vh;
-			height: 100lvh;
+			height: 100%;
 		}
 
 		#bg_wedding:before {
@@ -1391,44 +1378,47 @@ input, select, textarea {
 		background-color: #000000;
 	}
 
-/* Canvas backgrounds */
+/* Page photo layer */
 
-	/* The body background propagates to the canvas (html has no background),
-	   and iOS Safari paints the canvas across the whole window — including
-	   behind the glass toolbar, the status bar and the home indicator, which
-	   fixed elements cannot reliably reach on iOS 26. Mirror each page's
-	   photo here so those areas show the photo instead of a dark strip. */
-	body:has(#bg_engagement) {
-		background: #1b1f22 url("/images/engagement/proposal.webp") center / cover no-repeat;
+	/* An in-flow copy of each page's photo on body:before, spanning the
+	   first 100lvh of the document, so iOS 26 Safari composites photo
+	   pixels behind the glass toolbar, the status bar and the home
+	   indicator (see the note on body above). It sits underneath the
+	   fixed #bg_* layer, which still provides the stationary backdrop
+	   and blur/zoom effects inside the viewport. */
+	body:has(#bg_engagement):before {
+		background-image: url("/images/engagement/proposal.webp");
 	}
 
-	body:has(#bg_home) {
-		background: #1b1f22 url("/images/home/cliff_kiss.webp") center 15% / cover no-repeat;
+	body:has(#bg_home):before {
+		background-image: url("/images/home/cliff_kiss.webp");
+		background-position: center 15%;
 	}
 
-	body:has(#bg_std) {
-		background: #1b1f22 url("/images/std/tam_looking.jpeg") center / cover no-repeat;
+	body:has(#bg_std):before {
+		background-image: url("/images/std/tam_looking.jpeg");
 	}
 
-	body:has(#bg_wedding) {
-		background: #1b1f22 url("/images/wedding/walking.webp") center 80% / cover no-repeat;
+	body:has(#bg_wedding):before {
+		background-image: url("/images/wedding/walking.webp");
+		background-position: center 80%;
 	}
 
 	@media screen and (max-width: 1000px) {
 
-		body:has(#bg_engagement) {
+		body:has(#bg_engagement):before {
 			background-position: 28%;
 		}
 
-		body:has(#bg_home) {
+		body:has(#bg_home):before {
 			background-image: url("/images/home/half_dome_ledge.webp");
 		}
 
-		body:has(#bg_std) {
+		body:has(#bg_std):before {
 			background-position: 28%;
 		}
 
-		body:has(#bg_wedding) {
+		body:has(#bg_wedding):before {
 			background-position: 30%;
 		}
 
@@ -1455,10 +1445,12 @@ input, select, textarea {
 		justify-content: space-between;
 		position: relative;
 		min-height: 100vh;
-		/* Fill the screen minus the safe-area padding on body */
-		min-height: calc(100lvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+		min-height: 100lvh;
 		width: 100%;
+		/* Pad by the safe-area insets so content clears the notch, status
+		   bar and home indicator now that the layout runs edge-to-edge. */
 		padding: 4rem 2rem;
+		padding: calc(4rem + env(safe-area-inset-top, 0px)) calc(2rem + env(safe-area-inset-right, 0px)) calc(4rem + env(safe-area-inset-bottom, 0px)) calc(2rem + env(safe-area-inset-left, 0px));
 		z-index: 3;
 	}
 
@@ -1471,6 +1463,7 @@ input, select, textarea {
 
 			#wrapper {
 				padding: 3rem 2rem;
+				padding: calc(3rem + env(safe-area-inset-top, 0px)) calc(2rem + env(safe-area-inset-right, 0px)) calc(3rem + env(safe-area-inset-bottom, 0px)) calc(2rem + env(safe-area-inset-left, 0px));
 			}
 
 		}
@@ -1479,6 +1472,7 @@ input, select, textarea {
 
 			#wrapper {
 				padding: 2rem 1rem;
+				padding: calc(2rem + env(safe-area-inset-top, 0px)) calc(1rem + env(safe-area-inset-right, 0px)) calc(2rem + env(safe-area-inset-bottom, 0px)) calc(1rem + env(safe-area-inset-left, 0px));
 			}
 
 		}
@@ -1487,6 +1481,7 @@ input, select, textarea {
 
 			#wrapper {
 				padding: 1rem;
+				padding: calc(1rem + env(safe-area-inset-top, 0px)) calc(1rem + env(safe-area-inset-right, 0px)) calc(1rem + env(safe-area-inset-bottom, 0px)) calc(1rem + env(safe-area-inset-left, 0px));
 			}
 
 		}

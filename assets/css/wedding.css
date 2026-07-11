@@ -163,12 +163,12 @@
 	position: relative;
 	z-index: 2;
 	min-height: 100vh;
-	/* Fill the screen minus the safe-area padding on body */
-	min-height: calc(100lvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+	min-height: 100lvh;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	padding: 2em 1em;
+	padding: calc(2em + env(safe-area-inset-top, 0px)) calc(1em + env(safe-area-inset-right, 0px)) calc(2em + env(safe-area-inset-bottom, 0px)) calc(1em + env(safe-area-inset-left, 0px));
 }
 
 .photo-groups-card {
