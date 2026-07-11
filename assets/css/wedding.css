@@ -277,6 +277,10 @@
 	font-size: 0.85em;
 }
 
+.photo-groups-back {
+	margin-top: 1.75em;
+}
+
 /* Carousel Modal Styles */
 .outfit-examples-btn {
 	background: rgba(255, 255, 255, 0.1);
