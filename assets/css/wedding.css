@@ -289,6 +289,9 @@
 	padding: 0.75em 1.5em;
 	border-radius: 4px;
 	cursor: pointer;
+	/* the template's button rule forces height 2.75rem, which fights
+	   the padding-based sizing here and un-centers the label */
+	height: auto;
 	font-size: 0.9em;
 	margin-top: 0.5em;
 	margin-bottom: 1em;
