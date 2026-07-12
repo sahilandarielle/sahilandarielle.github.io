@@ -613,6 +613,50 @@ document.addEventListener('DOMContentLoaded', function() {
 	}, true);
 });
 
+// Garba Tutorials Modal
+document.addEventListener('DOMContentLoaded', function() {
+	const tutorialsModal = document.getElementById('garba-tutorials-modal');
+	const tutorialsBtn = document.getElementById('garba-tutorials-btn');
+	if (!tutorialsModal || !tutorialsBtn) return;
+
+	const closeTutorialsBtn = tutorialsModal.querySelector('.close-tutorials-modal');
+
+	tutorialsBtn.addEventListener('click', function(e) {
+		e.stopPropagation();
+		tutorialsModal.classList.add('active');
+		document.body.style.overflow = 'hidden';
+	});
+
+	function closeTutorialsModal() {
+		tutorialsModal.classList.remove('active');
+
+		// Small delay before restoring body scroll to prevent event propagation issues
+		setTimeout(function() {
+			document.body.style.overflow = 'auto';
+		}, 100);
+	}
+
+	// Handle all clicks on the modal
+	tutorialsModal.addEventListener('click', function(e) {
+		// Always prevent propagation to article modal
+		e.stopPropagation();
+
+		// Check if clicking close button or background
+		if (e.target === closeTutorialsBtn || e.target === tutorialsModal) {
+			closeTutorialsModal();
+		}
+	});
+
+	document.addEventListener('keydown', function(e) {
+		if (e.key === 'Escape' && tutorialsModal.classList.contains('active')) {
+			e.preventDefault();
+			e.stopPropagation();
+			e.stopImmediatePropagation();
+			closeTutorialsModal();
+		}
+	}, true);
+});
+
 // Lightbox
 document.addEventListener('DOMContentLoaded', function() {
 	const lightbox = document.getElementById('lightbox');
