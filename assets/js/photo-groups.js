@@ -226,3 +226,27 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 });
+
+// iOS scrolls the *document* to keep a focused input visible above the
+// on-screen keyboard, but doesn't always restore that scroll when the
+// keyboard closes — leaving the page (and the body:before photo)
+// shifted, since normal scrolling happens inside the wrapper/page
+// scroller instead. Once focus leaves form fields and the keyboard's
+// dismiss animation has settled, glide the document back in one smooth
+// motion (an instant double-snap looked jarring). Skipped when focus
+// merely moved to another field or nothing is shifted.
+// (-webkit-touch-callout only exists on iOS/iPadOS WebKit, matching
+// the CSS that makes the document otherwise non-scrolling.)
+if (window.CSS && CSS.supports('-webkit-touch-callout', 'none')) {
+	var iosScrollSnapTimer = null;
+	document.addEventListener('focusout', function() {
+		if (iosScrollSnapTimer) clearTimeout(iosScrollSnapTimer);
+		iosScrollSnapTimer = setTimeout(function() {
+			iosScrollSnapTimer = null;
+			var el = document.activeElement;
+			if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT')) return;
+			if (window.scrollX === 0 && window.scrollY === 0) return;
+			window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+		}, 350);
+	});
+}

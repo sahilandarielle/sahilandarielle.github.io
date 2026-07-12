@@ -94,8 +94,31 @@ input, select, textarea {
 		box-sizing: inherit;
 	}
 
+	/* Note: <html> deliberately has NO background — that lets the body
+	   background propagate to the canvas so the window edges never flash
+	   white. The photo itself is painted by body:before (see the "Page
+	   photo layer" section): iOS 26 Safari only composites real in-flow
+	   document pixels behind its glass toolbar and status bar — fixed
+	   elements are clipped at the safe-area edges, and the canvas image
+	   stops at the layout viewport. */
 	body {
 		background: #1b1f22;
+		position: relative;
+	}
+
+	body:before {
+		content: '';
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 100vh;
+		height: 100lvh;
+		background-position: center;
+		background-size: cover;
+		background-repeat: no-repeat;
+		z-index: 0;
 	}
 
 		body.is-preload *, body.is-preload *:before, body.is-preload *:after {
@@ -1129,13 +1152,13 @@ input, select, textarea {
 /* BG */
 
 	#bg_engagement {
-		transform: scale(1.0);
-		backface-visibility: hidden;
 		position: fixed;
 		top: 0;
 		left: 0;
+		right: 0;
 		width: 100%;
 		height: 100vh;
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1186,13 +1209,13 @@ input, select, textarea {
 		}
 
 	#bg_home {
-		transform: scale(1.0);
-		backface-visibility: hidden;
 		position: fixed;
 		top: 0;
 		left: 0;
+		right: 0;
 		width: 100%;
 		height: 100vh;
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1242,13 +1265,13 @@ input, select, textarea {
 		}
 
 	#bg_std {
-		transform: scale(1.0);
-		backface-visibility: hidden;
 		position: fixed;
 		top: 0;
 		left: 0;
+		right: 0;
 		width: 100%;
 		height: 100vh;
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1299,13 +1322,13 @@ input, select, textarea {
 	}
 
 	#bg_wedding {
-		transform: scale(1.0);
-		backface-visibility: hidden;
 		position: fixed;
 		top: 0;
 		left: 0;
+		right: 0;
 		width: 100%;
 		height: 100vh;
+		height: 100lvh;
 		z-index: 1;
 	}
 
@@ -1355,6 +1378,116 @@ input, select, textarea {
 		background-color: #000000;
 	}
 
+/* Page photo layer */
+
+	/* An in-flow copy of each page's photo on body:before, spanning the
+	   first 100lvh of the document, so iOS 26 Safari composites photo
+	   pixels behind the glass toolbar, the status bar and the home
+	   indicator (see the note on body above). It sits underneath the
+	   fixed #bg_* layer, which still provides the stationary backdrop
+	   and blur/zoom effects inside the viewport. */
+	body:has(#bg_engagement):before {
+		background-image: url("/images/engagement/proposal.webp");
+	}
+
+	body:has(#bg_home):before {
+		background-image: url("/images/home/cliff_kiss.webp");
+		background-position: center 15%;
+	}
+
+	body:has(#bg_std):before {
+		background-image: url("/images/std/tam_looking.jpeg");
+	}
+
+	body:has(#bg_wedding):before {
+		background-image: url("/images/wedding/walking.webp");
+		background-position: center 80%;
+	}
+
+	@media screen and (max-width: 1000px) {
+
+		body:has(#bg_engagement):before {
+			background-position: 28%;
+		}
+
+		body:has(#bg_home):before {
+			background-image: url("/images/home/half_dome_ledge.webp");
+		}
+
+		body:has(#bg_std):before {
+			background-position: 28%;
+		}
+
+		body:has(#bg_wedding):before {
+			background-position: 30%;
+		}
+
+	}
+
+	/* On iOS the fixed backdrop cannot be composited behind the glass
+	   toolbar and status bar, and stacking it over the in-flow photo
+	   layer shows a seam at the safe-area edges once the page scrolls
+	   (one layer moves, the other doesn't). Hide it there and let the
+	   in-flow body:before photo be the sole backdrop; it scrolls with
+	   the page so the glass areas always continue it seamlessly.
+	   (-webkit-touch-callout exists only on iOS/iPadOS WebKit.) */
+	@supports (-webkit-touch-callout: none) {
+
+		#bg_engagement, #bg_home, #bg_std, #bg_wedding {
+			display: none;
+		}
+
+		/* Only the foreground scrolls on iOS: the document itself never
+		   moves (everything fits within the 100lvh photo layer) and
+		   #wrapper becomes the scroll container for the header, nav,
+		   modals and copyright. The in-flow body:before photo therefore
+		   sits permanently behind the glass toolbar and status bar, with
+		   no seams and no crop changes at any scroll position or in any
+		   modal state. main.js resets #wrapper's scroll position wherever
+		   it resets the window's. */
+		#wrapper {
+			height: 100vh;
+			height: 100lvh;
+			overflow-y: auto;
+		}
+
+		/* 100lvh still ends partway through Safari's expanded glass
+		   toolbar; overshoot a little so the photo reaches the very
+		   bottom of the window (the excess hides behind the glass). */
+		body:before {
+			height: 108vh;
+			height: 108lvh;
+		}
+
+		/* Invisible spacer guaranteeing the wrapper 10lvh of scroll range
+		   at rest (absolutely positioned boxes extend a scroller's
+		   scrollable overflow without becoming flex items, so the
+		   header's first-screen centering is unaffected). */
+		#wrapper:after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 1px;
+			height: calc(100% + 10lvh);
+			pointer-events: none;
+		}
+
+		/* Paint the copyright below the first screenful, at the end of
+		   the wrapper's scroll range. Relative positioning keeps its flex
+		   slot, so the header stays centered on the first screenful; the
+		   wrapper's bottom padding (incl. the home-indicator inset) still
+		   provides the spacing at the new position. */
+		body:has(#bg_engagement) #footer,
+		body:has(#bg_home) #footer,
+		body:has(#bg_std) #footer,
+		body:has(#bg_wedding) #footer {
+			position: relative;
+			top: 10lvh;
+		}
+
+	}
+
 /* Wrapper */
 
 	#wrapper {
@@ -1376,8 +1509,12 @@ input, select, textarea {
 		justify-content: space-between;
 		position: relative;
 		min-height: 100vh;
+		min-height: 100lvh;
 		width: 100%;
+		/* Pad by the safe-area insets so content clears the notch, status
+		   bar and home indicator now that the layout runs edge-to-edge. */
 		padding: 4rem 2rem;
+		padding: calc(4rem + env(safe-area-inset-top, 0px)) calc(2rem + env(safe-area-inset-right, 0px)) calc(4rem + env(safe-area-inset-bottom, 0px)) calc(2rem + env(safe-area-inset-left, 0px));
 		z-index: 3;
 	}
 
@@ -1390,6 +1527,7 @@ input, select, textarea {
 
 			#wrapper {
 				padding: 3rem 2rem;
+				padding: calc(3rem + env(safe-area-inset-top, 0px)) calc(2rem + env(safe-area-inset-right, 0px)) calc(3rem + env(safe-area-inset-bottom, 0px)) calc(2rem + env(safe-area-inset-left, 0px));
 			}
 
 		}
@@ -1398,6 +1536,7 @@ input, select, textarea {
 
 			#wrapper {
 				padding: 2rem 1rem;
+				padding: calc(2rem + env(safe-area-inset-top, 0px)) calc(1rem + env(safe-area-inset-right, 0px)) calc(2rem + env(safe-area-inset-bottom, 0px)) calc(1rem + env(safe-area-inset-left, 0px));
 			}
 
 		}
@@ -1406,6 +1545,7 @@ input, select, textarea {
 
 			#wrapper {
 				padding: 1rem;
+				padding: calc(1rem + env(safe-area-inset-top, 0px)) calc(1rem + env(safe-area-inset-right, 0px)) calc(1rem + env(safe-area-inset-bottom, 0px)) calc(1rem + env(safe-area-inset-left, 0px));
 			}
 
 		}
