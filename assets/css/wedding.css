@@ -182,6 +182,25 @@
 	backdrop-filter: blur(6px);
 }
 
+/* iOS: same foreground-scroll treatment as #wrapper (see main.css) —
+   the page div scrolls while the document, and with it the in-flow
+   body:before photo, stays still. margin: auto keeps the card centered
+   but, unlike flex alignment, stays scrollable-from-the-top once the
+   results make it taller than the screen. */
+@supports (-webkit-touch-callout: none) {
+
+	.photo-groups-page {
+		height: 100vh;
+		height: 100lvh;
+		overflow-y: auto;
+	}
+
+	.photo-groups-card {
+		margin: auto;
+	}
+
+}
+
 .photo-groups-card h2 {
 	margin-bottom: 0.5em;
 	color: #ffffff;
