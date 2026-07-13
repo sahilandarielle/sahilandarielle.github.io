@@ -468,6 +468,7 @@
 	top: 0;
 	width: 100%;
 	height: 100%;
+	height: 100lvh; /* cover the safe areas too (viewport-fit=cover) */
 	background-color: rgba(0, 0, 0, 0.95);
 }
 
@@ -480,8 +481,8 @@
 
 .close-tutorials-modal {
 	position: absolute;
-	top: 20px;
-	right: 30px;
+	top: max(20px, env(safe-area-inset-top, 0px));
+	right: max(30px, env(safe-area-inset-right, 0px));
 	color: #ffffff;
 	font-size: 40px;
 	font-weight: bold;
