@@ -304,7 +304,8 @@
 }
 
 /* Carousel Modal Styles */
-.outfit-examples-btn {
+.outfit-examples-btn,
+.garba-tutorials-btn {
 	background: rgba(255, 255, 255, 0.1);
 	border: 1px solid rgba(255, 255, 255, 0.3);
 	color: #ffffff;
@@ -322,7 +323,8 @@
 	line-height: 1.2;
 }
 
-.outfit-examples-btn:hover {
+.outfit-examples-btn:hover,
+.garba-tutorials-btn:hover {
 	background: rgba(255, 255, 255, 0.2);
 	border-color: rgba(255, 255, 255, 0.5);
 }
@@ -457,8 +459,56 @@
 	background: rgba(255, 255, 255, 1);
 }
 
+/* Garba Tutorials Modal Styles */
+.tutorials-modal {
+	display: none;
+	position: fixed;
+	z-index: 9999;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	height: 100lvh; /* cover the safe areas too (viewport-fit=cover) */
+	background-color: rgba(0, 0, 0, 0.95);
+}
+
+.tutorials-modal.active {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	animation: fadeIn 0.3s ease-in-out;
+}
+
+.close-tutorials-modal {
+	position: absolute;
+	top: max(20px, env(safe-area-inset-top, 0px));
+	right: max(30px, env(safe-area-inset-right, 0px));
+	color: #ffffff;
+	font-size: 40px;
+	font-weight: bold;
+	cursor: pointer;
+	z-index: 10001;
+	transition: color 0.3s ease;
+}
+
+.close-tutorials-modal:hover {
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.tutorials-container {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 8px;
+	padding: 2em 2.5em;
+	max-width: 600px;
+	width: 90%;
+	max-height: 85vh;
+	overflow-y: auto;
+}
+
 @media screen and (max-width: 736px) {
-	.outfit-examples-btn {
+	.outfit-examples-btn,
+	.garba-tutorials-btn {
 		font-size: 1.2em;
 	}
 }
@@ -472,9 +522,14 @@
 		display: none;
 	}
 
-	.close-carousel-modal {
+	.close-carousel-modal,
+	.close-tutorials-modal {
 		top: 10px;
 		right: 15px;
 		font-size: 30px;
+	}
+
+	.tutorials-container {
+		padding: 1.5em;
 	}
 }
