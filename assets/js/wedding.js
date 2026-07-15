@@ -290,6 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	let translateX = 0;
 	let translateY = 0;
 	let lastTapTime = 0;
+	let carouselTrigger = null;
 
 	// Define image sets for each event
 	const eventImages = {
@@ -315,24 +316,29 @@ document.addEventListener('DOMContentLoaded', function() {
 		]
 	};
 
-	// Open modal when clicking outfit example buttons
-	const outfitBtns = document.querySelectorAll('.outfit-examples-btn');
-	outfitBtns.forEach(btn => {
-		btn.addEventListener('click', function(e) {
+	// Open the requested image carousel from main navigation or article buttons
+	const carouselTriggers = document.querySelectorAll('[data-carousel]');
+	carouselTriggers.forEach(trigger => {
+		trigger.addEventListener('click', function(e) {
+			e.preventDefault();
 			e.stopPropagation();
-			const event = this.getAttribute('data-event');
-			openCarouselModal(event);
+			const carouselName = this.getAttribute('data-carousel');
+			openCarouselModal(carouselName, this);
 		});
 	});
 
-	function openCarouselModal(event) {
-		currentImages = eventImages[event] || [];
+	function openCarouselModal(carouselName, trigger) {
+		currentImages = eventImages[carouselName] || [];
 		if (currentImages.length === 0) return;
 
+		carouselTrigger = trigger;
 		currentIndex = 0;
 		populateCarousel();
+		updateCarouselPosition();
 		carouselModal.classList.add('active');
+		carouselModal.setAttribute('aria-hidden', 'false');
 		document.body.style.overflow = 'hidden';
+		closeModalBtn.focus();
 
 		// Wait for modal to render before getting dimensions
 		setTimeout(() => {
@@ -359,9 +365,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Create dots
 		currentImages.forEach((_, index) => {
-			const dot = document.createElement('span');
+			const dot = document.createElement('button');
+			dot.type = 'button';
 			dot.classList.add('modal-carousel-dot');
-			if (index === 0) dot.classList.add('active');
+			dot.setAttribute('aria-label', `View image ${index + 1} of ${currentImages.length}`);
+			if (index === 0) {
+				dot.classList.add('active');
+				dot.setAttribute('aria-current', 'true');
+			}
 			dot.addEventListener('click', () => goToSlide(index));
 			modalDotsContainer.appendChild(dot);
 		});
@@ -377,8 +388,19 @@ document.addEventListener('DOMContentLoaded', function() {
 	function updateCarouselPosition() {
 		const dots = modalDotsContainer.querySelectorAll('.modal-carousel-dot');
 		dots.forEach((dot, index) => {
-			dot.classList.toggle('active', index === currentIndex);
+			const isCurrent = index === currentIndex;
+			dot.classList.toggle('active', isCurrent);
+			if (isCurrent) {
+				dot.setAttribute('aria-current', 'true');
+			} else {
+				dot.removeAttribute('aria-current');
+			}
 		});
+		modalTrack.querySelectorAll('.modal-carousel-image').forEach((img, index) => {
+			img.setAttribute('aria-hidden', index === currentIndex ? 'false' : 'true');
+		});
+		prevBtn.disabled = currentIndex === 0;
+		nextBtn.disabled = currentIndex === currentImages.length - 1;
 
 		const targetTranslate = -currentIndex * containerWidth;
 		modalTrack.style.transform = `translateX(${targetTranslate}px)`;
@@ -585,10 +607,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	function closeCarouselModal() {
 		resetZoom();
 		carouselModal.classList.remove('active');
+		carouselModal.setAttribute('aria-hidden', 'true');
 
 		// Small delay before restoring body scroll to prevent event propagation issues
 		setTimeout(function() {
 			document.body.style.overflow = 'auto';
+			if (carouselTrigger && carouselTrigger.isConnected) carouselTrigger.focus();
+			carouselTrigger = null;
 		}, 100);
 	}
 
@@ -604,57 +629,97 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 	document.addEventListener('keydown', function(e) {
-		if (e.key === 'Escape' && carouselModal.classList.contains('active')) {
+		if (!carouselModal.classList.contains('active')) return;
+
+		if (e.key === 'Escape') {
 			e.preventDefault();
 			e.stopPropagation();
 			e.stopImmediatePropagation();
 			closeCarouselModal();
+		} else if (e.key === 'ArrowLeft') {
+			e.preventDefault();
+			prevSlide();
+		} else if (e.key === 'ArrowRight') {
+			e.preventDefault();
+			nextSlide();
+		} else if (e.key === 'Tab') {
+			const controls = Array.from(carouselModal.querySelectorAll('button:not([disabled])'))
+				.filter(control => control.offsetParent !== null);
+			if (controls.length === 0) return;
+
+			const firstControl = controls[0];
+			const lastControl = controls[controls.length - 1];
+			if (e.shiftKey && (document.activeElement === firstControl || !carouselModal.contains(document.activeElement))) {
+				e.preventDefault();
+				lastControl.focus();
+			} else if (!e.shiftKey && document.activeElement === lastControl) {
+				e.preventDefault();
+				firstControl.focus();
+			}
 		}
 	}, true);
 });
 
-// Garba Tutorials Modal
+// Main-page content modals
 document.addEventListener('DOMContentLoaded', function() {
-	const tutorialsModal = document.getElementById('garba-tutorials-modal');
-	const tutorialsBtn = document.getElementById('garba-tutorials-btn');
-	if (!tutorialsModal || !tutorialsBtn) return;
+	function setupContentModal(triggerId, modalId) {
+		const modal = document.getElementById(modalId);
+		const trigger = document.getElementById(triggerId);
+		if (!modal || !trigger) return;
 
-	const closeTutorialsBtn = tutorialsModal.querySelector('.close-tutorials-modal');
+		const closeBtn = modal.querySelector('.close-content-modal');
 
-	tutorialsBtn.addEventListener('click', function(e) {
-		e.stopPropagation();
-		tutorialsModal.classList.add('active');
-		document.body.style.overflow = 'hidden';
-	});
-
-	function closeTutorialsModal() {
-		tutorialsModal.classList.remove('active');
-
-		// Small delay before restoring body scroll to prevent event propagation issues
-		setTimeout(function() {
-			document.body.style.overflow = 'auto';
-		}, 100);
-	}
-
-	// Handle all clicks on the modal
-	tutorialsModal.addEventListener('click', function(e) {
-		// Always prevent propagation to article modal
-		e.stopPropagation();
-
-		// Check if clicking close button or background
-		if (e.target === closeTutorialsBtn || e.target === tutorialsModal) {
-			closeTutorialsModal();
-		}
-	});
-
-	document.addEventListener('keydown', function(e) {
-		if (e.key === 'Escape' && tutorialsModal.classList.contains('active')) {
+		trigger.addEventListener('click', function(e) {
 			e.preventDefault();
 			e.stopPropagation();
-			e.stopImmediatePropagation();
-			closeTutorialsModal();
+			modal.classList.add('active');
+			modal.setAttribute('aria-hidden', 'false');
+			document.body.style.overflow = 'hidden';
+			closeBtn.focus();
+		});
+
+		function closeModal() {
+			modal.classList.remove('active');
+			modal.setAttribute('aria-hidden', 'true');
+
+			setTimeout(function() {
+				document.body.style.overflow = 'auto';
+				if (trigger.isConnected) trigger.focus();
+			}, 100);
 		}
-	}, true);
+
+		modal.addEventListener('click', function(e) {
+			e.stopPropagation();
+			if (e.target === closeBtn || e.target === modal) closeModal();
+		});
+
+		document.addEventListener('keydown', function(e) {
+			if (!modal.classList.contains('active')) return;
+
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				e.stopPropagation();
+				e.stopImmediatePropagation();
+				closeModal();
+			} else if (e.key === 'Tab') {
+				const controls = Array.from(modal.querySelectorAll('button:not([disabled]), a[href]'))
+					.filter(control => control.offsetParent !== null);
+				if (controls.length === 0) return;
+
+				const firstControl = controls[0];
+				const lastControl = controls[controls.length - 1];
+				if (e.shiftKey && (document.activeElement === firstControl || !modal.contains(document.activeElement))) {
+					e.preventDefault();
+					lastControl.focus();
+				} else if (!e.shiftKey && document.activeElement === lastControl) {
+					e.preventDefault();
+					firstControl.focus();
+				}
+			}
+		}, true);
+	}
+
+	setupContentModal('garba-tutorials-btn', 'garba-tutorials-modal');
 });
 
 // Lightbox
