@@ -29,7 +29,7 @@
 		<link rel="icon" href="/images/icons/heart.svg">
 
 		<link rel="stylesheet" href="/assets/css/main.css" />
-		<link rel="stylesheet" href="/assets/css/wedding.css" />
+		<link rel="stylesheet" href="/assets/css/wedding.css?v=20260714-native-maps" />
 		<noscript><link rel="stylesheet" href="/assets/css/noscript.css" /></noscript>
 	</head>
 	<body class="is-preload">
@@ -68,6 +68,8 @@
 					<ul>
 						<!-- <li><a href="#tbd">About Us</a></li> -->
 						<li><a href="#details">Schedule</a></li>
+						<li><button type="button" class="nav-modal-btn" id="garba-tutorials-btn" aria-haspopup="dialog" aria-controls="garba-tutorials-modal">Garba Tutorials</button></li>
+						<li><a href="#cantigny-maps">Cantigny Maps</a></li>
 						<li><a href="#accommodations">Accommodations</a></li>
 						<li><a href="#dress-code">Dress Code</a></li>
 						<li><a href="#rsvp">Your RSVP Info</a></li>
@@ -94,8 +96,7 @@
 					<p style="margin-top: -1em;"><strong>Haldi</strong> is a vibrant pre-wedding ceremony where a paste made from turmeric, sandalwood, and other ingredients is applied to the bride and groom (separately) by family and friends. This tradition is meant to cleanse and purify the couple before their wedding, while also giving them a healthy, radiant glow. It's a playful, joyous occasion filled with laughter and well-wishes, and yes, things get wonderfully messy!</p>
 
 					<h3 class="minor">Garba</h3>
-					<p>Our Garba event will feature performances by friends and family, dinner, and traditional garba group dancing at the end. Garba is a traditional Gujarati folk dance that originated as a devotional dance honoring the goddess Durga. Performed in concentric circles with rhythmic clapping and graceful movements, it's evolved into a joyous celebration at weddings and festivals. Don't worry if you've never done it before; the steps are simple and the atmosphere is welcoming. Check out the video tutorials below to learn the steps ahead of time!<br>
-					<button class="garba-tutorials-btn" id="garba-tutorials-btn">Garba Tutorials</button></p>
+					<p>Our Garba event will feature performances by friends and family, dinner, and traditional garba group dancing at the end. Garba is a traditional Gujarati folk dance that originated as a devotional dance honoring the goddess Durga. Performed in concentric circles with rhythmic clapping and graceful movements, it's evolved into a joyous celebration at weddings and festivals. Don't worry if you've never done it before; the steps are simple and the atmosphere is welcoming. Use the Garba Tutorials button on the main page to learn the steps ahead of time!</p>
 
 					<h3 class="minor">Jaan Prasthaan & Hindu Ceremony</h3>
 					<p><strong>The Jaan Prasthaan</strong> is the groom's procession, a lively and jubilant parade where the groom arrives on decorated vehicle accompanied by his family and friends. The procession features music, dancing, and celebration as the groom makes his way to the ceremony venue. The bride's family traditionally greets the jaan prasthaan with great fanfare.</p>
@@ -154,6 +155,16 @@
 					</div>
 				</article>
 
+				<!-- Cantigny Maps -->
+				<article id="cantigny-maps">
+					<h2 class="major">CANTIGNY MAPS</h2>
+					<p>Choose a map showing key locations for our Saturday events.</p>
+					<div class="map-links">
+						<a href="/images/wedding/cantigny_labeled.png" target="_blank" rel="noopener noreferrer" class="button">Hindu &amp; American Ceremony</a>
+						<a href="/images/wedding/cantigny_drive_to_reception.png" target="_blank" rel="noopener noreferrer" class="button">Reception</a>
+					</div>
+				</article>
+
 				<!-- Accommodations -->
 				<article id="accommodations">
 					<h2 class="major">ACCOMMODATIONS</h2>
@@ -189,28 +200,28 @@
 					<p><strong>Theme:</strong> Good Morning Sunshine<br>
 					<strong>Dress Code:</strong> Indian Traditional (preferred) or American Semi-Formal<br>
 					<strong>Colors:</strong> Morning colors like yellows and oranges<br>
-					<button class="outfit-examples-btn" data-event="haldi">View Example Outfits</button></p>
+					<button class="outfit-examples-btn" data-carousel="haldi" aria-haspopup="dialog">View Example Outfits</button></p>
 
 					<h3 class="minor">Friday Evening | Garba Night</h3>
 					<p><strong>Theme:</strong> Dancing Under the Milky Way<br>
 					<strong>Dress Code:</strong> Indian Traditional (preferred) or American Formal<br>
 					<strong>Colors:</strong> Dark colors like navy, purples, and blacks. Sparkly clothing encouraged!<br>
 					<strong>Avoid:</strong> Gold and silver<br>
-					<button class="outfit-examples-btn" data-event="garba">View Example Outfits</button></p>
+					<button class="outfit-examples-btn" data-carousel="garba" aria-haspopup="dialog">View Example Outfits</button></p>
 
 					<h3 class="minor">Saturday Morning | Jaan Prasthaan & Hindu Ceremony</h3>
 					<p><strong>Theme:</strong> Petals and Promises<br>
 					<strong>Dress Code:</strong> Indian Formal (preferred) or American Formal<br>
 					<strong>Colors:</strong> Pastels and soft colors<br>
 					<strong>Avoid:</strong> Red and ivory<br>
-					<button class="outfit-examples-btn" data-event="indian-ceremony">View Example Outfits</button></p>
+					<button class="outfit-examples-btn" data-carousel="indian-ceremony" aria-haspopup="dialog">View Example Outfits</button></p>
 
 					<h3 class="minor">Saturday Evening | American Ceremony & Reception</h3>
 					<p><strong>Theme:</strong> Enchanted Forest<br>
 					<strong>Dress Code:</strong> American Black Tie<br>
 					<strong>Colors:</strong> Darker colors like greens, browns, and florals<br>
 					<strong>Avoid:</strong> White<br>
-					<button class="outfit-examples-btn" data-event="american-ceremony">View Example Outfits</button></p>
+					<button class="outfit-examples-btn" data-carousel="american-ceremony" aria-haspopup="dialog">View Example Outfits</button></p>
 
 					<h3 class="minor">A Note on Sustainability</h3>
 					<p>While we encourage embracing our themes and colors, we also value sustainability and thoughtful choices. Guests are warmly invited to wear outfits they already own—formal gowns, black suits, or other favorite pieces are perfectly welcome for all events.</p>
@@ -324,25 +335,25 @@
 		</div>
 
 		<!-- Carousel Modal -->
-		<div id="carousel-modal" class="carousel-modal">
-			<span class="close-carousel-modal">&times;</span>
+		<div id="carousel-modal" class="carousel-modal" role="dialog" aria-modal="true" aria-label="Wedding image carousel" aria-hidden="true">
+			<button type="button" class="close-carousel-modal" aria-label="Close image carousel">&times;</button>
 			<div class="modal-carousel-container">
 				<button class="carousel-btn prev" aria-label="Previous">&lsaquo;</button>
-				<div class="modal-carousel-images">
+				<div class="modal-carousel-images" aria-live="polite">
 					<div class="modal-carousel-track">
 						<!-- Images will be dynamically inserted here -->
 					</div>
 				</div>
 				<button class="carousel-btn next" aria-label="Next">&rsaquo;</button>
 			</div>
-			<div class="modal-carousel-dots"></div>
+			<div class="modal-carousel-dots" role="group" aria-label="Choose an image"></div>
 		</div>
 
 		<!-- Garba Tutorials Modal -->
-		<div id="garba-tutorials-modal" class="tutorials-modal">
-			<span class="close-tutorials-modal">&times;</span>
-			<div class="tutorials-container">
-				<h2>Garba Tutorials</h2>
+		<div id="garba-tutorials-modal" class="content-modal" role="dialog" aria-modal="true" aria-labelledby="garba-tutorials-title" aria-hidden="true">
+			<button type="button" class="close-content-modal" aria-label="Close Garba tutorials">&times;</button>
+			<div class="content-modal-container">
+				<h2 id="garba-tutorials-title">Garba Tutorials</h2>
 				<p>Here are some videos to help you learn the steps ahead of time:</p>
 
 				<h3 class="minor">Garba</h3>
@@ -365,7 +376,7 @@
 		<script src="/assets/js/breakpoints.min.js"></script>
 		<script src="/assets/js/util.js"></script>
 		<script src="/assets/js/main.js"></script>
-		<script src="/assets/js/wedding.js"></script>
+		<script src="/assets/js/wedding.js?v=20260714-native-maps"></script>
 
 	</body>
 </html>
