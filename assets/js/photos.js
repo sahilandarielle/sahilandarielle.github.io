@@ -1,11 +1,11 @@
-// Wedding Photos page
+// Wedding Photos and Videos pages
 document.addEventListener('DOMContentLoaded', function() {
 	// Like the photo groups page, this one is shared by direct link and has
 	// no password. Seed the auth token wedding.js checks (must match
 	// actualCorrectHash there) so the back link doesn't hit the password
 	// prompt. Storage can throw in Safari private browsing; the guest then
 	// just gets the normal password prompt.
-	const backLink = document.getElementById('photos-back');
+	const backLink = document.querySelector('#photos-back, #videos-back');
 	if (backLink) {
 		backLink.addEventListener('click', function() {
 			try {
